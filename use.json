@@ -1,0 +1,1606 @@
+{
+    "foodGroups": {
+        "Junk Food": [
+            "Pani Puri",
+            "Samosa",
+            "Vada Pav",
+            "Dabeli",
+            "Puff",
+            "Bhel",
+            "Dahi Vada",
+            "Bhaji Pav",
+            "Chole Bhature",
+            "Ghadhiya ne Chai",
+            "Mini Pizza (Indian style)",
+            "Bread Pizza (Indian style)",
+            "Pizza",
+            "Burger",
+            "Veg Sandwich",
+            "Batata Sandwich",
+            "Cheese Pav",
+            "Garlic Bread",
+            "Lasagna",
+            "Pasta",
+            "Mix Veg Pasta",
+            "Nachos",
+            "Pancake"
+        ],
+        "Healthy Home-style Meals": [
+            "Urad Dal & Bhakhri",
+            "Batata Sak & Bhakri",
+            "Palak Paneer & Naan",
+            "Shahi Paneer & Naan",
+            "Mutter Paneer & Naan",
+            "Aloo Paratha",
+            "Chasia Sew nu Sak & Bhakri",
+            "Tikhari & Rotla",
+            "Cabbage Batata nu Sak & Bhakri",
+            "Bhindi Batata nu Sak & Bhakri",
+            "Ragda",
+            "Batata Poha",
+            "Utapam",
+            "Masala Dosa",
+            "Batata Lasan Shak",
+            "Batata Sukhi Bhaji",
+            "Dal Bhat",
+            "Dal",
+            "Mix Dal Tadka & Naan",
+            "Gavar Batata Sak",
+            "Mug Khichdi",
+            "Sabudana Khichdi",
+            "Dindora Batata Sak",
+            "Dudhi Chana Sak & Bhakri",
+            "Dudhi Sak",
+            "Lili Dhungri Sew Sak",
+            "Ringene Batata Shak",
+            "Ringene na Odo & Rotlo",
+            "Tomato Chutney & Bhakri",
+            "Yellow Kadhi & Mung Khichdi",
+            "Vadhareli Khichdi",
+            "Mandir Menu",
+            "Mix Veg Paneer",
+            "Tomato nu Shak & Bhakri",
+            "Chokhank Lot nu Khichu",
+            "Desi Chana nu Shak, Kadhi & Bhat",
+            "Chole with Salad",
+            "Tomato Soup",
+            "Palak Mogar Dal & Bhakri",
+            "Palak & Bhakri",
+            "Methi Thepla",
+            "Dudhi Thepla",
+            "Ajma Thepla",
+            "Masala Bhakri",
+            "Gajar nu Shak",
+            "Vadharela Bhat",
+            "Curd Rice",
+            "Dal Dhokli",
+            "Mix Dal Khichdi",
+            "Kathiyavadi Odo",
+            "Veg Pulav",
+            "Broccoli Batata nu Shak",
+            "Mix Veg Idli",
+            "Turiya nu Shak",
+            "Squash nu Shak",
+            "Mung Bhat",
+            "Beans Batata Shak",
+            "Karela nu Shak",
+            "Flower, Vatana & Batata nu Shak",
+            "Chana na Lot na Dhokli",
+            "Palak Potato Shak",
+            "Vatana Batata Shak",
+            "Veg Paratha",
+            "Misal Pav"
+        ],
+        "Dessert": [
+            "Puran Poldi",
+            "Rava no Sero",
+            "Gajer no Halvo",
+            "Sukhadi",
+            "Dry Fruit Khajur Ladoo",
+            "Fruit Salad",
+            "Rava Cake",
+            "Chocolate Cake",
+            "Cup Cake",
+            "Nankhatai",
+            "Shreekhand",
+            "Rasgulla",
+            "Sabudana Kheer",
+            "Fada Lapsi",
+            "Rasmali",
+            "Loki Halva",
+            "Besan Ladoo",
+            "Mohanthal",
+            "Kajukatri",
+            "Mandavi Pak",
+            "Coconut Ladoo",
+            "Penda",
+            "Milk Cake",
+            "Gughara",
+            "Cheesecake",
+            "Gulab Jamun",
+            "Rice Kheer"
+        ],
+        "Pani Puri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Samosa": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Vada Pav": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dabeli": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Puff": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Bhel": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dahi Vada": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Bhaji Pav": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chole Bhature": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Ghadhiya ne Chai": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mini Pizza (Indian style)": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Bread Pizza (Indian style)": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Pizza": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Burger": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Veg Sandwich": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Batata Sandwich": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Cheese Pav": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Garlic Bread": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Lasagna": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "P asta": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mix Veg Pasta": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Nachos": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Pancake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Urad Dal & Bhakhri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Batata Sak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Palak Paneer & Naan": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Shahi Paneer & Naan": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mutter Paneer & Naan": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Aloo Paratha": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chasia Sew nu Sak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Tikhari & Rotla": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Cabbage Batata nu Sak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Bhindi Batata nu Sak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Ragda": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Batata Poha": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Utapam": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Masala Dosa": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Batata Lasan Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Batata Sukhi Bhaji": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dal Bhat": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dal": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mix Dal Tadka & Naan": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Gavar Batata Sak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mug Khichdi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Sabudana Khichdi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dindora Batata Sak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dudhi Chana Sak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dudhi Sak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Lili Dhungri Sew Sak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Ringene Batata Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Ringene na Odo & Rotlo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Tomato Chutney & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Yellow Kadhi & Mung Khichdi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Vadhareli Khichdi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mandir Menu": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mix Veg Paneer": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Tomato nu Shak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chokhank Lot nu Khichu": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Desi Chana nu Shak, Kadhi & Bhat": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chole with Salad": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Tomato Soup": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Palak Mogar Dal & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Palak & Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Methi Thepla": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dudhi Thepla": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Ajma Thepla": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Masala Bhakri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Gajar nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Vadharela Bhat": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Curd Rice": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dal Dhokli": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mix Dal Khichdi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Kathiyavadi Odo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Veg Pulav": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Broccoli Batata nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mix Veg Idli": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Turiya nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Squash nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mung Bhat": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Beans Batata Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Karela nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Flower, Vatana & Batata nu Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chana na Lot na Dhokli": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Palak Potato Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Vatana Batata Shak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Veg Paratha": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Misal Pav": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Puran Poldi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Rava no Sero": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Gajer no Halvo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Sukhadi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Dry Fruit Khajur Ladoo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Fruit Salad": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Rava Cake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Chocolate Cake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Cup Cake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Nankhatai": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Shreekhand": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Rasgulla": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Sabudana Kheer": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Fada Lapsi": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Rasmali": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Loki Halva": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Besan Ladoo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mohanthal": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Kajukatri": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Mandavi Pak": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Coconut Ladoo": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Penda": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Milk Cake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Gughara": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Cheesecake": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Gulab Jamun": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        },
+        "Rice Kheer": {
+            "description": "Add the description here",
+            "ingredients": [
+                "Add",
+                "Ingredients",
+                "here"
+            ],
+            "method": [
+                "Add",
+                "Method",
+                "here"
+            ]
+        }
+    }
+}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meal Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <style>
+    .btn-danger {
+      background: #ff4c4c;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #cc0000;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div class="container mx-auto p-8 bg-gray-800 rounded-lg shadow-2xl max-w-4xl">
+    <h1 class="text-5xl text-green-500 text-center mb-4">Meal Planner 🌱</h1>
+    <p class="text-center text-yellow-400 mb-8">Roll the dice and discover delicious dishes from all around the menu — a new surprise every time! 🎲🍴</p>
+
+    <div class="text-center mb-4">
+      <input id="daysInput" type="number" min="1" max="30" value="5" class="w-20 text-black text-center font-bold rounded p-2">
+      <label for="daysInput" class="ml-2 text-lg text-yellow-300">Days</label>
+    </div>
+
+    <div class="text-center mb-8">
+      <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-full text-lg mr-4">
+        🎲 Generate Plan
+      </button>
+      <button id="resetButton" class="btn-danger font-bold py-3 px-6 rounded-full text-lg">
+        🗑 Reset
+      </button>
+    </div>
+
+    <div id="daysLeft" class="text-center text-yellow-300 mb-4 text-lg font-semibold"></div>
+    <div id="result" class="bg-gray-700 p-6 rounded-lg shadow-inner mb-8"></div>
+  </div>
+
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
+      authDomain: "meal-b14ca.firebaseapp.com",
+      databaseURL: "https://meal-b14ca-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "meal-b14ca",
+      storageBucket: "meal-b14ca.appspot.com",
+      messagingSenderId: "190610959035",
+      appId: "1:190610959035:web:6d078d26d0e7e07c86979e",
+      measurementId: "G-PKD67YL45V"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const foodRef = db.ref("foodGroups");
+    const currentMealPlanRef = db.ref("currentMealPlan");
+    const mealPlanMetadataRef = db.ref("mealPlanMetadata");
+    const daysLeftDisplay = document.getElementById('daysLeft');
+    let foodGroups = {};
+
+    foodRef.on("value", (snapshot) => {
+      foodGroups = snapshot.val() || {};
+      loadMealPlan();
+    });
+
+    function saveCurrentMealPlan(planHTML, days) {
+      const generationDate = new Date().toISOString().split('T')[0];
+      currentMealPlanRef.set(planHTML);
+      mealPlanMetadataRef.set({ generationDate: generationDate, days: days });
+    }
+
+    function clearMealPlan() {
+      currentMealPlanRef.remove();
+      mealPlanMetadataRef.remove();
+      document.getElementById("result").innerHTML = "";
+      daysLeftDisplay.textContent = "";
+    }
+
+    function loadMealPlan() {
+      mealPlanMetadataRef.once('value', (metaSnap) => {
+        const metadata = metaSnap.val();
+        currentMealPlanRef.once('value', (planSnap) => {
+          const existingPlan = planSnap.val();
+          if (existingPlan) {
+            document.getElementById("result").innerHTML = `${existingPlan}`;
+            if (metadata && metadata.days && metadata.generationDate) {
+              const expiryDate = new Date(metadata.generationDate);
+              expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
+              const today = new Date();
+              const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
+              daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
+            }
+          }
+        });
+      });
+    }
+
+    function generateMealPlan() {
+  const resultEl = document.getElementById("result");
+  const numDays = parseInt(document.getElementById("daysInput").value) || 5;
+  const healthyMeals = [...(foodGroups["Healthy Home-style Meals"] || [])];
+  const junkFood = [...(foodGroups["Junk Food"] || [])];
+  const desserts = [...(foodGroups["Dessert"] || [])];
+
+  if (healthyMeals.length === 0 || junkFood.length === 0) {
+    resultEl.innerHTML = "<p class='text-red-400'>Not enough dishes available in required groups.</p>";
+    return;
+  }
+
+  let selections = [];
+
+  // Calculate number of junk days and dessert days
+  const junkDaysCount = Math.round(numDays * 0.2);
+  const healthyDaysCount = numDays - junkDaysCount;
+  const dessertDaysCount = Math.floor(numDays / 5);
+
+  // Create meal types array
+  let mealTypes = Array(healthyDaysCount).fill("Healthy Home-style Meals")
+                  .concat(Array(junkDaysCount).fill("Junk Food"));
+  
+  // Shuffle meal types randomly
+  mealTypes.sort(() => Math.random() - 0.5);
+
+  // Randomly pick dessert day indices
+  let dessertDayIndices = [];
+  while (dessertDayIndices.length < dessertDaysCount) {
+    let randomIndex = Math.floor(Math.random() * numDays);
+    if (!dessertDayIndices.includes(randomIndex)) {
+      dessertDayIndices.push(randomIndex);
+    }
+  }
+
+  for (let i = 0; i < numDays; i++) {
+    let group = mealTypes[i];
+    let dishList = group === "Healthy Home-style Meals" ? healthyMeals : junkFood;
+    
+    // Pick random dish without repeating until dishes are exhausted
+    let randomDish;
+    if (dishList.length > 0) {
+      let randomIndex = Math.floor(Math.random() * dishList.length);
+      randomDish = dishList.splice(randomIndex, 1)[0]; // remove from list
+    } else {
+      // If out of dishes, allow repeating
+      const backupList = foodGroups[group];
+      randomDish = backupList[Math.floor(Math.random() * backupList.length)];
+    }
+
+    let selection = {
+      day: i + 1,
+      dish: randomDish,
+      group: group,
+      dessert: null
+    };
+
+    if (dessertDayIndices.includes(i) && desserts.length > 0) {
+      let randomDessert;
+      if (desserts.length > 0) {
+        let dessertIndex = Math.floor(Math.random() * desserts.length);
+        randomDessert = desserts.splice(dessertIndex, 1)[0];
+      } else {
+        const backupDesserts = foodGroups["Dessert"];
+        randomDessert = backupDesserts[Math.floor(Math.random() * backupDesserts.length)];
+      }
+      selection.dessert = randomDessert;
+    }
+
+    selections.push(selection);
+  }
+
+  // Build HTML
+  let selectionsHTML = `<h3 class="text-2xl text-green-400 mb-4">🥗 Meal Plan:</h3>`;
+  selections.forEach(selection => {
+    const mealURL = `detail.html?meal=${encodeURIComponent(selection.dish)}`;
+    let html = `<a href="${mealURL}" class="block bg-gray-600 p-4 rounded-lg mb-3 border-l-4 border-green-500 hover:bg-gray-500 transition duration-300">
+      <strong class="text-lg">Day ${selection.day}</strong>: ${selection.dish} <em class="text-green-300">(${selection.group})</em>`;
+
+    if (selection.dessert) {
+      html += `<br><span class="text-pink-300">🍰 Dessert: ${selection.dessert}</span>`;
+    }
+
+    html += `</a>`;
+
+    selectionsHTML += html;
+  });
+
+  resultEl.innerHTML = selectionsHTML;
+  saveCurrentMealPlan(selectionsHTML, numDays);
+  daysLeftDisplay.textContent = `Days Left: ${numDays}`;
+}
+
+
+    document.getElementById("selectButton").addEventListener("click", generateMealPlan);
+    document.getElementById("resetButton").addEventListener("click", clearMealPlan);
+
+
+
+  </script>
+</body>
+</html>
