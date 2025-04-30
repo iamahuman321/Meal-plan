@@ -1,203 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meal Planner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <style>
-    .btn-danger {
-      background: #ff4c4c;
-      color: white;
-    }
-    .btn-danger:hover {
-      background: #cc0000;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Meal Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
-  <div class="container mx-auto p-8 bg-gray-800 rounded-lg shadow-2xl max-w-4xl">
-    <h1 class="text-5xl text-green-500 text-center mb-4">Meal Planner 🌱</h1>
-    <p class="text-center text-yellow-400 mb-8">Roll the dice and discover delicious dishes from all around the menu — a new surprise every time! 🎲🍴</p>
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 bg-gray-800 rounded-lg shadow-2xl max-w-4xl">
+        <h1 class="text-4xl sm:text-5xl text-green-500 text-center mb-8">Meal Planner 🌱</h1>
 
-    <div class="text-center mb-4">
-      <input id="daysInput" type="number" min="1" max="30" value="5" class="w-20 text-black text-center font-bold rounded p-2">
-      <label for="daysInput" class="ml-2 text-lg text-yellow-300">Days</label>
+        <div class="text-center mb-4">
+            <input id="daysInput" type="number" min="1" max="30" value="5" class="w-20 text-black text-center font-bold rounded p-2">
+            <label for="daysInput" class="ml-2 text-lg text-yellow-300">Days</label>
+        </div>
+        <div class="text-center mb-8 flex flex-wrap justify-center gap-4">
+            <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-full text-lg">
+                🍏 Generate Plan
+            </button>
+            <button id="resetButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full text-lg">
+                🗑 Reset
+            </button>
+        </div>
+
+        <div id="daysLeft" class="text-center text-yellow-300 mb-4 text-lg font-semibold"></div>
+        <div id="result" class="bg-gray-700 p-4 sm:p-6 rounded-lg shadow-inner mb-8 space-y-3"></div>
+
+        <div class="bg-gray-800 p-6 rounded-lg mt-10">
+            <h2 class="text-2xl text-yellow-300 mb-4">🛠 Manage Dishes</h2>
+            <div class="flex flex-col sm:flex-row gap-4 items-center mb-4">
+                <select id="groupSelect" class="text-black p-2 rounded">
+                    <option value="Healthy Home-style Meals">Healthy Home-style Meals</option>
+                    <option value="Junk Food">Junk Food</option>
+                    <option value="Dessert">Dessert</option>
+                </select>
+                <input id="newDishInput" type="text" placeholder="New Dish Name" class="text-black p-2 rounded w-full sm:w-auto">
+                <button onclick="addDish()" class="bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-4 rounded">
+                    ➕ Add Dish
+                </button>
+            </div>
+            <ul id="dishList" class="space-y-2"></ul>
+        </div>
     </div>
 
-    <div class="text-center mb-8">
-      <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-full text-lg mr-4">
-        🎲 Generate Plan
-      </button>
-      <button id="resetButton" class="btn-danger font-bold py-3 px-6 rounded-full text-lg">
-        🗑 Reset
-      </button>
-    </div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
+            authDomain: "meal-b14ca.firebaseapp.com",
+            databaseURL: "https://meal-b14ca-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "meal-b14ca",
+            storageBucket: "meal-b14ca.appspot.com",
+            messagingSenderId: "190610959035",
+            appId: "1:190610959035:web:6d078d26d0e7e07c86979e",
+            measurementId: "G-PKD67YL45V"
+        };
 
-    <div id="daysLeft" class="text-center text-yellow-300 mb-4 text-lg font-semibold"></div>
-    <div id="result" class="bg-gray-700 p-6 rounded-lg shadow-inner mb-8"></div>
-  </div>
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const foodRef = db.ref("foodGroups");
+        const currentMealPlanRef = db.ref("mealPlan/current");
+        const mealPlanMetadataRef = db.ref("mealPlan/metadata");
 
+        let foodGroups = {};
+        let daysLeftDisplay = document.getElementById("daysLeft");
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
-      authDomain: "meal-b14ca.firebaseapp.com",
-      databaseURL: "https://meal-b14ca-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "meal-b14ca",
-      storageBucket: "meal-b14ca.appspot.com",
-      messagingSenderId: "190610959035",
-      appId: "1:190610959035:web:6d078d26d0e7e07c86979e",
-      measurementId: "G-PKD67YL45V"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const foodRef = db.ref("foodGroups");
-    const currentMealPlanRef = db.ref("currentMealPlan");
-    const mealPlanMetadataRef = db.ref("mealPlanMetadata");
-    const daysLeftDisplay = document.getElementById('daysLeft');
-    let foodGroups = {};
-
-    foodRef.on("value", (snapshot) => {
-      foodGroups = snapshot.val() || {};
-      loadMealPlan();
-    });
-
-    function saveCurrentMealPlan(planHTML, days) {
-      const generationDate = new Date().toISOString().split('T')[0];
-      currentMealPlanRef.set(planHTML);
-      mealPlanMetadataRef.set({ generationDate: generationDate, days: days });
-    }
-
-    function clearMealPlan() {
-      currentMealPlanRef.remove();
-      mealPlanMetadataRef.remove();
-      document.getElementById("result").innerHTML = "";
-      daysLeftDisplay.textContent = "";
-    }
-
-    function loadMealPlan() {
-      mealPlanMetadataRef.once('value', (metaSnap) => {
-        const metadata = metaSnap.val();
-        currentMealPlanRef.once('value', (planSnap) => {
-          const existingPlan = planSnap.val();
-          if (existingPlan) {
-            document.getElementById("result").innerHTML = `${existingPlan}`;
-            if (metadata && metadata.days && metadata.generationDate) {
-              const expiryDate = new Date(metadata.generationDate);
-              expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
-              const today = new Date();
-              const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
-              daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
-            }
-          }
+        foodRef.on("value", (snapshot) => {
+            foodGroups = snapshot.val() || {};
+            loadMealPlan();
+            loadDishList(); // Load the dish list when foodGroups data is updated
         });
-      });
-    }
 
-    function generateMealPlan() {
-  const resultEl = document.getElementById("result");
-  const numDays = parseInt(document.getElementById("daysInput").value) || 5;
-  const healthyMeals = [...(foodGroups["Healthy Home-style Meals"] || [])];
-  const junkFood = [...(foodGroups["Junk Food"] || [])];
-  const desserts = [...(foodGroups["Dessert"] || [])];
+        document.getElementById("selectButton").addEventListener("click", generateMealPlan);
+        document.getElementById("resetButton").addEventListener("click", clearMealPlan);
 
-  if (healthyMeals.length === 0 || junkFood.length === 0) {
-    resultEl.innerHTML = "<p class='text-red-400'>Not enough dishes available in required groups.</p>";
-    return;
-  }
+        function clearMealPlan() {
+            currentMealPlanRef.remove();
+            mealPlanMetadataRef.remove();
+            document.getElementById("result").innerHTML = "";
+            daysLeftDisplay.textContent = "";
+        }
 
-  let selections = [];
+        function saveCurrentMealPlan(planHTML, days, planData) {
+            const generationDate = new Date().toISOString().split('T')[0];
+            currentMealPlanRef.set({
+                html: planHTML,
+                data: planData
+            });
+            mealPlanMetadataRef.set({ generationDate, days });
+        }
 
-  // Calculate number of junk days and dessert days
-  const junkDaysCount = Math.round(numDays * 0.2);
-  const healthyDaysCount = numDays - junkDaysCount;
-  const dessertDaysCount = Math.floor(numDays / 5);
+        function loadMealPlan() {
+            mealPlanMetadataRef.once('value', metaSnap => {
+                const metadata = metaSnap.val();
+                if (!metadata) return;
+                currentMealPlanRef.once('value', planSnap => {
+                    const saved = planSnap.val();
+                    if (saved && saved.html && saved.data) {
+                        document.getElementById("result").innerHTML = saved.html;
+                        window.currentPlan = saved.data;
+                        const expiryDate = new Date(metadata.generationDate);
+                        expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
+                        const today = new Date();
+                        const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
+                        daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
+                    }
+                });
+            });
+        }
 
-  // Create meal types array
-  let mealTypes = Array(healthyDaysCount).fill("Healthy Home-style Meals")
-                  .concat(Array(junkDaysCount).fill("Junk Food"));
-  
-  // Shuffle meal types randomly
-  mealTypes.sort(() => Math.random() - 0.5);
+        function generateMealPlan() {
+            const resultEl = document.getElementById("result");
+            const numDays = parseInt(document.getElementById("daysInput").value) || 5;
+            let healthy = [...(foodGroups["Healthy Home-style Meals"] || [])];
+            let junk = [...(foodGroups["Junk Food"] || [])];
+            let dessert = [...(foodGroups["Dessert"] || [])];
 
-  // Randomly pick dessert day indices
-  let dessertDayIndices = [];
-  while (dessertDayIndices.length < dessertDaysCount) {
-    let randomIndex = Math.floor(Math.random() * numDays);
-    if (!dessertDayIndices.includes(randomIndex)) {
-      dessertDayIndices.push(randomIndex);
-    }
-  }
+            const junkDays = Math.round(numDays * 0.2);
+            const healthyDays = numDays - junkDays;
+            const dessertCount = Math.floor(numDays / 5);
 
-  for (let i = 0; i < numDays; i++) {
-    let group = mealTypes[i];
-    let dishList = group === "Healthy Home-style Meals" ? healthyMeals : junkFood;
-    
-    // Pick random dish without repeating until dishes are exhausted
-    let randomDish;
-    if (dishList.length > 0) {
-      let randomIndex = Math.floor(Math.random() * dishList.length);
-      randomDish = dishList.splice(randomIndex, 1)[0]; // remove from list
-    } else {
-      // If out of dishes, allow repeating
-      const backupList = foodGroups[group];
-      randomDish = backupList[Math.floor(Math.random() * backupList.length)];
-    }
+            let types = Array(healthyDays).fill("Healthy Home-style Meals").concat(Array(junkDays).fill("Junk Food"));
+            types.sort(() => Math.random() - 0.5);
 
-    let selection = {
-      day: i + 1,
-      dish: randomDish,
-      group: group,
-      dessert: null
-    };
+            let dessertIndices = [];
+            while (dessertIndices.length < dessertCount) {
+                let i = Math.floor(Math.random() * numDays);
+                if (!dessertIndices.includes(i)) dessertIndices.push(i);
+            }
 
-    if (dessertDayIndices.includes(i) && desserts.length > 0) {
-      let randomDessert;
-      if (desserts.length > 0) {
-        let dessertIndex = Math.floor(Math.random() * desserts.length);
-        randomDessert = desserts.splice(dessertIndex, 1)[0];
-      } else {
-        const backupDesserts = foodGroups["Dessert"];
-        randomDessert = backupDesserts[Math.floor(Math.random() * backupDesserts.length)];
-      }
-      selection.dessert = randomDessert;
-    }
+            let plan = [];
+            for (let i = 0; i < numDays; i++) {
+                let group = types[i];
+                let list = group === "Healthy Home-style Meals" ? healthy : junk;
+                let item = list.length ? list.splice(Math.floor(Math.random() * list.length), 1)[0] : foodGroups[group][Math.floor(Math.random() * foodGroups[group].length)];
+                let dessertItem = dessertIndices.includes(i) && dessert.length ? dessert.splice(Math.floor(Math.random() * dessert.length), 1)[0] : null;
+                plan.push({ day: i + 1, group, item, dessert: dessertItem });
+            }
 
-    selections.push(selection);
-  }
+            let html = `<h3 class="text-2xl text-green-400 mb-4">🥗 Meal Plan:</h3>`;
+            plan.forEach((d, i) => {
+                html += `
+<div class="relative bg-gray-600 p-4 pt-16 rounded-lg border-l-4 border-green-500 hover:bg-gray-500 transition duration-300 cursor-pointer" onclick="goToDetail(event)">
+    ${d.dessert ? `<button class="switch-dessert-btn" onclick="event.stopPropagation(); switchDessert(${i})">Switch Dessert</button>` : ''}
+    <button class="switch-btn" onclick="event.stopPropagation(); switchMeal(${i}, '${d.group.replace(/'/g, "\\'")}')">Switch</button>
+    <strong class="text-lg">Day ${d.day}</strong>: 
+    <span id="meal-${i}">${d.item}</span>
+    <em class="text-green-300">(${d.group})</em>
+    ${d.dessert ? `<br><span id="dessert-${i}" class="text-pink-300">🍰 Dessert: ${d.dessert}</span>` : ''}
+</div>`;
+            });
 
-  // Build HTML
-  let selectionsHTML = `<h3 class="text-2xl text-green-400 mb-4">🥗 Meal Plan:</h3>`;
-  selections.forEach(selection => {
-    const mealURL = `detail.html?meal=${encodeURIComponent(selection.dish)}`;
-    let html = `<a href="${mealURL}" class="block bg-gray-600 p-4 rounded-lg mb-3 border-l-4 border-green-500 hover:bg-gray-500 transition duration-300">
-      <strong class="text-lg">Day ${selection.day}</strong>: ${selection.dish} <em class="text-green-300">(${selection.group})</em>`;
+            resultEl.innerHTML = html;
+            window.currentPlan = plan;
+            saveCurrentMealPlan(html, numDays, plan);
+            daysLeftDisplay.textContent = `Days Left: ${numDays}`;
+        }
 
-    if (selection.dessert) {
-      html += `<br><span class="text-pink-300">🍰 Dessert: ${selection.dessert}</span>`;
-    }
+        function switchMeal(index, group) {
+            const plan = window.currentPlan;
+            const current = plan[index];
+            const list = [...(foodGroups[group] || [])].filter(x => x !== current.item);
+            if (list.length === 0) return;
+            const newItem = list[Math.floor(Math.random() * list.length)];
+            current.item = newItem;
+            document.getElementById(`meal-${index}`).textContent = newItem;
 
-    html += `</a>`;
+            // Save updated plan to Firebase
+            const updatedHTML = document.getElementById("result").innerHTML;
+            const days = parseInt(document.getElementById("daysInput").value) || 5;
+            saveCurrentMealPlan(updatedHTML, days, plan);
+        }
 
-    selectionsHTML += html;
-  });
+        function switchDessert(index) {
+            const plan = window.currentPlan;
+            const current = plan[index];
+            const desserts = [...(foodGroups["Dessert"] || [])].filter(x => x !== current.dessert);
+            if (desserts.length === 0) return;
+            const newDessert = desserts[Math.floor(Math.random() * desserts.length)];
+            current.dessert = newDessert;
+            document.getElementById(`dessert-${index}`).innerHTML = `🍰 Dessert: ${newDessert}`;
 
-  resultEl.innerHTML = selectionsHTML;
-  saveCurrentMealPlan(selectionsHTML, numDays);
-  daysLeftDisplay.textContent = `Days Left: ${numDays}`;
-}
+            // Save updated plan to Firebase
+            const updatedHTML = document.getElementById("result").innerHTML;
+            const days = parseInt(document.getElementById("daysInput").value) || 5;
+            saveCurrentMealPlan(updatedHTML, days, plan);
+        }
 
+        function goToDetail(e) {
+            const clickedEl = e.currentTarget;
+            const dishName = clickedEl.querySelector("span[id^='meal-']").textContent.trim();
+            const encoded = encodeURIComponent(dishName);
+            window.location.href = `detail.html?meal=${encoded}`;
+        }
 
-    document.getElementById("selectButton").addEventListener("click", generateMealPlan);
-    document.getElementById("resetButton").addEventListener("click", clearMealPlan);
+        // Manage Dishes Section
+        document.getElementById("groupSelect").addEventListener("change", loadDishList);
 
+        function loadDishList() {
+            const group = document.getElementById("groupSelect").value;
+            const dishes = foodGroups[group] || [];
+            const dishList = document.getElementById("dishList");
+            dishList.innerHTML = "";
+            dishes.forEach((dish, index) => {
+                dishList.innerHTML += `
+                    <li class="bg-gray-700 p-2 rounded flex justify-between items-center">
+                        <input id="edit-${index}" class="bg-transparent border-none outline-none text-white w-full" value="${dish}" />
+                        <div class="space-x-2">
+                            <button onclick="saveDish(${index})" class="text-green-400 hover:text-green-300">💾</button>
+                            <button onclick="deleteDish(${index})" class="text-red-400 hover:text-red-300">🗑</button>
+                        </div>
+                    </li>`;
+            });
+        }
 
+        function addDish() {
+            const group = document.getElementById("groupSelect").value;
+            const input = document.getElementById("newDishInput");
+            const newDish = input.value.trim();
+            if (!newDish) return;
 
-  </script>
+            const updated = [...(foodGroups[group] || []), newDish];
+            db.ref(`foodGroups/${group}`).set(updated).then(() => {
+                input.value = "";
+                foodGroups[group] = updated;
+                loadDishList();
+            });
+        }
+
+        function saveDish(index) {
+            const group = document.getElementById("groupSelect").value;
+            const newValue = document.getElementById(`edit-${index}`).value.trim();
+            if (!newValue) return;
+            const updated = [...foodGroups[group]];
+            updated[index] = newValue;
+            db.ref(`foodGroups/${group}`).set(updated).then(() => {
+                foodGroups[group] = updated;
+                loadDishList();
+            });
+        }
+
+        function deleteDish(index) {
+            const group = document.getElementById("groupSelect").value;
+            const updated = [...foodGroups[group]];
+            updated.splice(index, 1);
+            db.ref(`foodGroups/${group}`).set(updated).then(() => {
+                foodGroups[group] = updated;
+                loadDishList();
+            });
+        }
+
+    </script>
+
+    <style>
+        .switch-btn, .switch-dessert-btn {
+            position: absolute;
+            top: 1rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            z-index: 10;
+            transition: background-color 0.3s ease;
+        }
+        .switch-btn {
+            right: 1rem;
+            background-color: #4ade80;
+            color: black;
+        }
+        .switch-btn:hover {
+            background-color: #22c55e;
+        }
+        .switch-dessert-btn {
+            right: 6rem;
+            background-color: #f472b6;
+            color: black;
+        }
+        .switch-dessert-btn:hover {
+            background-color: #ec4899;
+        }
+    </style>
 </body>
 </html>
