@@ -5,88 +5,322 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Meal Planner</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --secondary: #3b82f6;
+      --dark: #1e293b;
+      --darker: #0f172a;
+      --light: #f8fafc;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--darker);
+      color: var(--light);
+    }
+    
+    .meal-card {
+      transition: all 0.3s ease;
+      transform-style: preserve-3d;
+    }
+    
+    .meal-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    
+    .switch-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .switch-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .dish-card {
+      transition: all 0.2s ease;
+    }
+    
+    .dish-card:hover {
+      transform: translateY(-3px);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #334155;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #64748b;
+      border-radius: 4px;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-  <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
-    <!-- Meal Planner Section -->
-    <div class="bg-gray-800 rounded-lg shadow-2xl p-4 sm:p-6 md:p-8 mb-10">
-      <h1 class="text-4xl sm:text-5xl text-green-500 text-center mb-4">Meal Planner 🌱</h1>
-      <div class="text-center mb-4">
-        <input id="daysInput" type="number" min="1" max="30" value="5" class="w-20 text-black text-center font-bold rounded p-2">
-        <label for="daysInput" class="ml-2 text-lg text-yellow-300">Days</label>
+<body class="min-h-screen pb-20">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-green-600 to-blue-600 p-4 shadow-lg sticky top-0 z-10">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center">
+        <span class="mr-2">🌱</span> Meal Planner
+      </h1>
+      <button id="menuBtn" class="md:hidden text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- Meal Generator Section -->
+    <section class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <h2 class="text-2xl font-bold text-green-400 mb-4 md:mb-0">Generate Your Meal Plan</h2>
+        <div class="flex items-center">
+          <input id="daysInput" type="number" min="1" max="30" value="7" 
+                 class="w-16 text-center bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white mr-2">
+          <span class="text-white">Days</span>
+        </div>
       </div>
-      <div class="text-center mb-8 flex flex-wrap justify-center gap-4">
-        <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-black font-bold py-3 px-6 rounded-full text-lg">
-          🍏 Generate Plan
+      
+      <div class="flex flex-wrap gap-4 justify-center mb-6">
+        <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+          </svg>
+          Generate Plan
         </button>
-        <button id="resetButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full text-lg">
-          🗑 Reset
+        <button id="resetButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          Reset
         </button>
       </div>
 
       <div id="daysLeft" class="text-center text-yellow-300 mb-4 text-lg font-semibold"></div>
-      <div id="result" class="bg-gray-700 p-4 sm:p-6 rounded-lg shadow-inner mb-8 space-y-3"></div>
+      
+      <div id="loadingSpinner" class="flex justify-center items-center py-8 hidden">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+      </div>
+      
+      <div id="result" class="space-y-4"></div>
+    </section>
+
+    <!-- Action Buttons (Export/Share) -->
+    <div id="actionButtons" class="hidden flex flex-wrap justify-center gap-4 mb-8">
+      <button onclick="exportPDF()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Export PDF
+      </button>
+      <button onclick="sharePlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+        </svg>
+        Share Plan
+      </button>
+      <button onclick="showGroceryModal()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+        </svg>
+        Grocery List
+      </button>
     </div>
 
     <!-- Dish Management Section -->
-    <div class="bg-gray-800 rounded-lg shadow-2xl p-6">
-      <h2 class="text-2xl text-yellow-300 mb-4">🛠 Manage Dishes</h2>
+    <section class="bg-gray-800 rounded-xl shadow-2xl p-6">
+      <h2 class="text-2xl font-bold text-yellow-300 mb-6">Manage Your Dishes</h2>
       
-      <div class="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
-        <div>
-          <div class="flex gap-2 mb-4">
-            <button class="group-tab bg-gray-700 hover:bg-green-600 px-4 py-2 rounded font-semibold" data-group="Healthy Home-style Meals">Healthy</button>
-            <button class="group-tab bg-gray-700 hover:bg-red-600 px-4 py-2 rounded font-semibold" data-group="Junk Food">Junk</button>
-            <button class="group-tab bg-gray-700 hover:bg-pink-600 px-4 py-2 rounded font-semibold" data-group="Dessert">Dessert</button>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Dish List -->
+        <div class="lg:col-span-2">
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button class="group-tab bg-gray-700 hover:bg-green-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Healthy Home-style Meals">
+              Healthy
+            </button>
+            <button class="group-tab bg-gray-700 hover:bg-red-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Junk Food">
+              Junk
+            </button>
+            <button class="group-tab bg-gray-700 hover:bg-pink-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Dessert">
+              Dessert
+            </button>
           </div>
 
-          <input type="text" id="searchInput" placeholder="Search..." class="w-full px-4 py-2 rounded text-black font-semibold mb-4">
+          <div class="relative mb-4">
+            <input type="text" id="searchInput" placeholder="Search dishes..." 
+                   class="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+            <div class="absolute left-3 top-2.5 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
 
-          <div id="dishContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2"></div>
+          <div id="dishContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto p-2"></div>
         </div>
 
+        <!-- Add Dish Form -->
         <div>
-          <h2 class="text-2xl text-green-300 mb-2">Add New Dish</h2>
-          <div class="space-y-3 bg-gray-700 p-4 rounded-lg shadow">
-            <input id="newDishName" type="text" placeholder="Dish Name" class="w-full px-4 py-2 rounded text-black font-semibold">
-            <select id="newDishGroup" class="w-full px-4 py-2 rounded text-black font-semibold">
-              <option value="Healthy Home-style Meals">Healthy</option>
-              <option value="Junk Food">Junk</option>
-              <option value="Dessert">Dessert</option>
-            </select>
-            <button id="addDishBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2 rounded w-full">Add Dish</button>
+          <div class="bg-gray-700 p-4 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-green-300 mb-4">Add New Dish</h3>
+            <div class="space-y-4">
+              <div>
+                <label for="newDishName" class="block text-sm font-medium text-gray-300 mb-1">Dish Name</label>
+                <input id="newDishName" type="text" placeholder="Enter dish name" 
+                       class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+              </div>
+              <div>
+                <label for="newDishGroup" class="block text-sm font-medium text-gray-300 mb-1">Category</label>
+                <select id="newDishGroup" class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="Healthy Home-style Meals">Healthy</option>
+                  <option value="Junk Food">Junk Food</option>
+                  <option value="Dessert">Dessert</option>
+                </select>
+              </div>
+              <button id="addDishBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Add Dish
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="mt-6 bg-gray-700 p-4 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-green-300 mb-4">Your Dish Stats</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-gray-800 p-3 rounded-lg text-center">
+                <div class="text-2xl font-bold text-green-400" id="healthyCount">0</div>
+                <div class="text-sm text-gray-300">Healthy</div>
+              </div>
+              <div class="bg-gray-800 p-3 rounded-lg text-center">
+                <div class="text-2xl font-bold text-red-400" id="junkCount">0</div>
+                <div class="text-sm text-gray-300">Junk</div>
+              </div>
+              <div class="bg-gray-800 p-3 rounded-lg text-center">
+                <div class="text-2xl font-bold text-pink-400" id="dessertCount">0</div>
+                <div class="text-sm text-gray-300">Dessert</div>
+              </div>
+              <div class="bg-gray-800 p-3 rounded-lg text-center">
+                <div class="text-2xl font-bold text-blue-400" id="totalCount">0</div>
+                <div class="text-sm text-gray-300">Total</div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Grocery List Modal -->
+  <div id="groceryModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div class="flex justify-between items-center p-4 border-b border-gray-700">
+        <h3 class="text-xl font-bold text-green-400">🛒 Your Grocery List</h3>
+        <button onclick="closeGroceryModal()" class="text-gray-400 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-4 overflow-y-auto max-h-[70vh]">
+        <div id="groceryListContent"></div>
+      </div>
+      <div class="p-4 border-t border-gray-700 flex justify-end gap-2">
+        <button onclick="printGroceryList()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+          Print
+        </button>
+        <button onclick="exportGroceryPDF()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+          Export PDF
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Edit Dish Modal -->
-  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
-    <div class="bg-gray-800 p-6 rounded-lg max-w-sm w-full">
-      <h2 class="text-xl text-green-400 mb-4">Edit Dish</h2>
-      <input id="editDishName" type="text" class="w-full px-4 py-2 mb-4 rounded text-black font-semibold">
-      <div class="flex justify-between gap-4">
-        <button id="saveEditBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-full">Save</button>
-        <button id="closeEditBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-full">Close</button>
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md">
+      <div class="p-4 border-b border-gray-700">
+        <h3 class="text-xl font-bold text-green-400">Edit Dish</h3>
+      </div>
+      <div class="p-4">
+        <input id="editDishName" type="text" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white mb-4 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <div class="flex justify-end gap-2">
+          <button id="saveEditBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+            Save
+          </button>
+          <button id="closeEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
-    <div class="bg-gray-800 p-6 rounded-lg max-w-sm w-full">
-      <h2 class="text-xl text-red-400 mb-4">Are you sure you want to delete this dish?</h2>
-      <div class="flex justify-between gap-4">
-        <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded w-full">Yes, Delete</button>
-        <button id="closeDeleteBtn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded w-full">Cancel</button>
+  <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md">
+      <div class="p-4 border-b border-gray-700">
+        <h3 class="text-xl font-bold text-red-400">Confirm Delete</h3>
+      </div>
+      <div class="p-4">
+        <p class="text-gray-300 mb-4">Are you sure you want to delete this dish? This action cannot be undone.</p>
+        <div class="flex justify-end gap-2">
+          <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+            Delete
+          </button>
+          <button id="closeDeleteBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span id="toastMessage">Operation successful!</span>
+    </div>
+  </div>
+
   <script>
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
       authDomain: "meal-b14ca.firebaseapp.com",
@@ -98,36 +332,259 @@
       measurementId: "G-PKD67YL45V"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const foodRef = db.ref("foodGroups");
     const currentMealPlanRef = db.ref("mealPlan/current");
     const mealPlanMetadataRef = db.ref("mealPlan/metadata");
 
+    // Global Variables
     let foodGroups = {};
-    let daysLeftDisplay = document.getElementById("daysLeft");
     let currentGroup = "Healthy Home-style Meals";
-    let displayLimit = 10;
-    let renderedCount = 0;
     let selectedDish = "";
+    let currentPlan = [];
+    let ingredientMap = {
+      // Healthy Meals
+      "Grilled Chicken": ["Chicken breast", "Olive oil", "Lemon", "Garlic", "Salt", "Pepper"],
+      "Vegetable Stir Fry": ["Broccoli", "Carrots", "Bell peppers", "Soy sauce", "Ginger", "Garlic", "Sesame oil"],
+      "Salmon with Asparagus": ["Salmon fillet", "Asparagus", "Lemon", "Butter", "Dill", "Salt", "Pepper"],
+      "Quinoa Salad": ["Quinoa", "Cucumber", "Tomato", "Red onion", "Feta cheese", "Olive oil", "Lemon juice"],
+      
+      // Junk Food
+      "Cheeseburger": ["Beef patty", "Cheese", "Burger bun", "Lettuce", "Tomato", "Onion", "Ketchup", "Mustard"],
+      "Pizza": ["Pizza dough", "Tomato sauce", "Mozzarella cheese", "Pepperoni", "Mushrooms", "Bell peppers"],
+      "Fried Chicken": ["Chicken pieces", "Flour", "Eggs", "Breadcrumbs", "Oil for frying", "Salt", "Pepper"],
+      
+      // Desserts
+      "Chocolate Cake": ["Flour", "Sugar", "Cocoa powder", "Eggs", "Butter", "Milk", "Baking powder"],
+      "Apple Pie": ["Apples", "Pie crust", "Sugar", "Cinnamon", "Butter", "Lemon juice"],
+      "Ice Cream Sundae": ["Vanilla ice cream", "Chocolate syrup", "Whipped cream", "Cherries", "Nuts"]
+    };
 
-    foodRef.on("value", (snapshot) => {
-      foodGroups = snapshot.val() || {};
-      loadMealPlan();
-      renderDishes(true);
+    // DOM Elements
+    const daysLeftDisplay = document.getElementById("daysLeft");
+    const resultEl = document.getElementById("result");
+    const actionButtons = document.getElementById("actionButtons");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const dishContainer = document.getElementById("dishContainer");
+    const toast = document.getElementById("toast");
+    const toastMessage = document.getElementById("toastMessage");
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      loadFoodGroups();
     });
 
-    // Meal Planner Functions
-    document.getElementById("selectButton").addEventListener("click", generateMealPlan);
-    document.getElementById("resetButton").addEventListener("click", clearMealPlan);
+    // Setup all event listeners
+    function setupEventListeners() {
+      // Meal Planner
+      document.getElementById("selectButton").addEventListener("click", generateMealPlan);
+      document.getElementById("resetButton").addEventListener("click", clearMealPlan);
+      
+      // Dish Management
+      document.querySelectorAll(".group-tab").forEach(button => {
+        button.addEventListener("click", () => {
+          currentGroup = button.getAttribute("data-group");
+          renderDishes(true);
+          updateActiveTab();
+        });
+      });
+      
+      document.getElementById("searchInput").addEventListener("input", () => renderDishes(true));
+      document.getElementById("addDishBtn").addEventListener("click", addDish);
+      
+      // Modals
+      document.getElementById("closeEditBtn").addEventListener("click", closeEditModal);
+      document.getElementById("saveEditBtn").addEventListener("click", saveEditedDish);
+      document.getElementById("closeDeleteBtn").addEventListener("click", closeDeleteModal);
+      document.getElementById("confirmDeleteBtn").addEventListener("click", deleteDish);
+    }
 
+    // Update active tab styling
+    function updateActiveTab() {
+      document.querySelectorAll(".group-tab").forEach(tab => {
+        if (tab.getAttribute("data-group") === currentGroup) {
+          tab.classList.add("bg-green-600", "text-white");
+          tab.classList.remove("bg-gray-700");
+        } else {
+          tab.classList.remove("bg-green-600", "text-white");
+          tab.classList.add("bg-gray-700");
+        }
+      });
+    }
+
+    // Load food groups from Firebase
+    function loadFoodGroups() {
+      foodRef.on("value", (snapshot) => {
+        foodGroups = snapshot.val() || {};
+        renderDishes(true);
+        updateDishStats();
+        loadMealPlan();
+      });
+    }
+
+    // Generate meal plan
+    function generateMealPlan() {
+      const numDays = parseInt(document.getElementById("daysInput").value) || 7;
+      loadingSpinner.classList.remove("hidden");
+      resultEl.innerHTML = "";
+      actionButtons.classList.add("hidden");
+      
+      setTimeout(() => {
+        let healthy = [...(foodGroups["Healthy Home-style Meals"] || [])];
+        let junk = [...(foodGroups["Junk Food"] || [])];
+        let dessert = [...(foodGroups["Dessert"] || [])];
+
+        const junkDays = Math.round(numDays * 0.2);
+        const healthyDays = numDays - junkDays;
+        const dessertCount = Math.floor(numDays / 3);
+
+        let types = Array(healthyDays).fill("Healthy Home-style Meals").concat(Array(junkDays).fill("Junk Food"));
+        types.sort(() => Math.random() - 0.5);
+
+        let dessertIndices = [];
+        while (dessertIndices.length < dessertCount) {
+          let i = Math.floor(Math.random() * numDays);
+          if (!dessertIndices.includes(i)) dessertIndices.push(i);
+        }
+
+        currentPlan = [];
+        for (let i = 0; i < numDays; i++) {
+          let group = types[i];
+          let list = group === "Healthy Home-style Meals" ? healthy : junk;
+          let item = list.length ? list.splice(Math.floor(Math.random() * list.length), 1)[0] : foodGroups[group][Math.floor(Math.random() * foodGroups[group].length)];
+          let dessertItem = dessertIndices.includes(i) && dessert.length ? dessert.splice(Math.floor(Math.random() * dessert.length), 1)[0] : null;
+          currentPlan.push({ day: i + 1, group, item, dessert: dessertItem });
+        }
+
+        renderMealPlan();
+        loadingSpinner.classList.add("hidden");
+        actionButtons.classList.remove("hidden");
+      }, 500);
+    }
+
+    // Render the meal plan
+    function renderMealPlan() {
+      let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+      
+      currentPlan.forEach((d, i) => {
+        html += `
+          <div class="meal-card bg-gray-700 p-4 rounded-lg border-l-4 border-green-500 relative">
+            <div class="absolute top-2 right-2 flex gap-2">
+              ${d.dessert ? `
+                <button onclick="switchDessert(${i})" class="switch-btn bg-pink-500 hover:bg-pink-600 text-white text-xs px-2 py-1 rounded">
+                  🍰 Switch
+                </button>
+              ` : ''}
+              <button onclick="switchMeal(${i}, '${d.group.replace(/'/g, "\\'")}')" class="switch-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">
+                🔄 Switch
+              </button>
+            </div>
+            
+            <div class="font-bold text-lg mb-1">Day ${d.day}</div>
+            <div class="text-green-300 mb-1">${d.item}</div>
+            <div class="text-sm text-gray-400">${d.group}</div>
+            ${d.dessert ? `
+              <div class="mt-2 pt-2 border-t border-gray-600">
+                <div class="text-pink-300">🍰 ${d.dessert}</div>
+              </div>
+            ` : ''}
+            
+            <button onclick="viewMealDetails('${d.item.replace(/'/g, "\\'")}')" class="mt-3 text-blue-400 hover:text-blue-300 text-sm flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+              </svg>
+              View Details
+            </button>
+          </div>
+        `;
+      });
+      
+      html += `</div>`;
+      resultEl.innerHTML = html;
+      
+      // Save to Firebase
+      saveCurrentMealPlan(html, parseInt(document.getElementById("daysInput").value) || 7, currentPlan);
+      daysLeftDisplay.textContent = `Plan Duration: ${parseInt(document.getElementById("daysInput").value) || 7} days`;
+    }
+
+    // Switch meal function
+    function switchMeal(index, group) {
+      const plan = currentPlan;
+      const current = plan[index];
+      const list = [...(foodGroups[group] || [])].filter(x => x !== current.item);
+      
+      if (list.length === 0) {
+        showToast("No alternative dishes available", "red");
+        return;
+      }
+      
+      const newItem = list.length ? list[Math.floor(Math.random() * list.length)] : foodGroups[group][Math.floor(Math.random() * foodGroups[group].length)];
+      current.item = newItem;
+      renderMealPlan();
+      showToast("Meal swapped successfully!");
+    }
+
+    // Switch dessert function
+    function switchDessert(index) {
+      const plan = currentPlan;
+      const current = plan[index];
+      const desserts = [...(foodGroups["Dessert"] || [])].filter(x => x !== current.dessert);
+      
+      if (desserts.length === 0) {
+        showToast("No alternative desserts available", "red");
+        return;
+      }
+      
+      const newDessert = desserts.length ? desserts[Math.floor(Math.random() * desserts.length)] : foodGroups["Dessert"][Math.floor(Math.random() * foodGroups["Dessert"].length)];
+      current.dessert = newDessert;
+      renderMealPlan();
+      showToast("Dessert swapped successfully!");
+    }
+
+    // View meal details
+    function viewMealDetails(mealName) {
+      window.location.href = `detail.html?meal=${encodeURIComponent(mealName)}`;
+    }
+
+    // Clear meal plan
     function clearMealPlan() {
       currentMealPlanRef.remove();
       mealPlanMetadataRef.remove();
-      document.getElementById("result").innerHTML = "";
+      resultEl.innerHTML = "";
       daysLeftDisplay.textContent = "";
+      actionButtons.classList.add("hidden");
+      showToast("Meal plan cleared");
     }
 
+    // Load saved meal plan
+    function loadMealPlan() {
+      mealPlanMetadataRef.once('value', metaSnap => {
+        const metadata = metaSnap.val();
+        if (!metadata) return;
+        
+        currentMealPlanRef.once('value', planSnap => {
+          const saved = planSnap.val();
+          if (saved && saved.html && saved.data) {
+            resultEl.innerHTML = saved.html;
+            currentPlan = saved.data;
+            actionButtons.classList.remove("hidden");
+            
+            const expiryDate = new Date(metadata.generationDate);
+            expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
+            const today = new Date();
+            const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
+            
+            daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
+          }
+        });
+      });
+    }
+
+    // Save current meal plan to Firebase
     function saveCurrentMealPlan(planHTML, days, planData) {
       const generationDate = new Date().toISOString().split('T')[0];
       currentMealPlanRef.set({
@@ -137,167 +594,112 @@
       mealPlanMetadataRef.set({ generationDate, days });
     }
 
-    function loadMealPlan() {
-      mealPlanMetadataRef.once('value', metaSnap => {
-        const metadata = metaSnap.val();
-        if (!metadata) return;
-        currentMealPlanRef.once('value', planSnap => {
-          const saved = planSnap.val();
-          if (saved && saved.html && saved.data) {
-            document.getElementById("result").innerHTML = saved.html;
-            window.currentPlan = saved.data;
-            const expiryDate = new Date(metadata.generationDate);
-            expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
-            const today = new Date();
-            const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
-            daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
-          }
-        });
-      });
-    }
-
-    function generateMealPlan() {
-      const resultEl = document.getElementById("result");
-      const numDays = parseInt(document.getElementById("daysInput").value) || 5;
-      let healthy = [...(foodGroups["Healthy Home-style Meals"] || [])];
-      let junk = [...(foodGroups["Junk Food"] || [])];
-      let dessert = [...(foodGroups["Dessert"] || [])];
-
-      const junkDays = Math.round(numDays * 0.2);
-      const healthyDays = numDays - junkDays;
-      const dessertCount = Math.floor(numDays / 5);
-
-      let types = Array(healthyDays).fill("Healthy Home-style Meals").concat(Array(junkDays).fill("Junk Food"));
-      types.sort(() => Math.random() - 0.5);
-
-      let dessertIndices = [];
-      while (dessertIndices.length < dessertCount) {
-        let i = Math.floor(Math.random() * numDays);
-        if (!dessertIndices.includes(i)) dessertIndices.push(i);
-      }
-
-      let plan = [];
-      for (let i = 0; i < numDays; i++) {
-        let group = types[i];
-        let list = group === "Healthy Home-style Meals" ? healthy : junk;
-        let item = list.length ? list.splice(Math.floor(Math.random() * list.length), 1)[0] : foodGroups[group][Math.floor(Math.random() * foodGroups[group].length)];
-        let dessertItem = dessertIndices.includes(i) && dessert.length ? dessert.splice(Math.floor(Math.random() * dessert.length), 1)[0] : null;
-        plan.push({ day: i + 1, group, item, dessert: dessertItem });
-      }
-
-      let html = `<h3 class="text-2xl text-green-400 mb-4">🥗 Meal Plan:</h3>`;
-      plan.forEach((d, i) => {
-        html += `
-<div class="relative bg-gray-600 p-4 pt-16 rounded-lg border-l-4 border-green-500 hover:bg-gray-500 transition duration-300 cursor-pointer" onclick="goToDetail(event)">
-  ${d.dessert ? `<button class="switch-dessert-btn" onclick="event.stopPropagation(); switchDessert(${i})">Switch Dessert</button>` : ''}
-  <button class="switch-btn" onclick="event.stopPropagation(); switchMeal(${i}, '${d.group.replace(/'/g, "\\'")}')">Switch</button>
-  <strong class="text-lg">Day ${d.day}</strong>: 
-  <span id="meal-${i}">${d.item}</span>
-  <em class="text-green-300">(${d.group})</em>
-  ${d.dessert ? `<br><span id="dessert-${i}" class="text-pink-300">🍰 Dessert: ${d.dessert}</span>` : ''}
-</div>`;
-      });
-
-      resultEl.innerHTML = html;
-      window.currentPlan = plan;
-      saveCurrentMealPlan(html, numDays, plan);
-      daysLeftDisplay.textContent = `Days Left: ${numDays}`;
-    }
-
-    function switchMeal(index, group) {
-      const plan = window.currentPlan;
-      const current = plan[index];
-      const list = [...(foodGroups[group] || [])].filter(x => x !== current.item);
-      if (list.length === 0) return;
-      const newItem = list[Math.floor(Math.random() * list.length)];
-      current.item = newItem;
-      document.getElementById(`meal-${index}`).textContent = newItem;
-
-      // Save updated plan to Firebase
-      const updatedHTML = document.getElementById("result").innerHTML;
-      const days = parseInt(document.getElementById("daysInput").value) || 5;
-      saveCurrentMealPlan(updatedHTML, days, plan);
-    }
-
-    function switchDessert(index) {
-      const plan = window.currentPlan;
-      const current = plan[index];
-      const desserts = [...(foodGroups["Dessert"] || [])].filter(x => x !== current.dessert);
-      if (desserts.length === 0) return;
-      const newDessert = desserts[Math.floor(Math.random() * desserts.length)];
-      current.dessert = newDessert;
-      document.getElementById(`dessert-${index}`).innerHTML = `🍰 Dessert: ${newDessert}`;
-
-      // Save updated plan to Firebase
-      const updatedHTML = document.getElementById("result").innerHTML;
-      const days = parseInt(document.getElementById("daysInput").value) || 5;
-      saveCurrentMealPlan(updatedHTML, days, plan);
-    }
-
-    function goToDetail(e) {
-      const clickedEl = e.currentTarget;
-      const dishName = clickedEl.querySelector("span[id^='meal-']").textContent.trim();
-      const encoded = encodeURIComponent(dishName);
-      window.location.href = `detail.html?meal=${encoded}`;
-    }
-
-    // Dish Management Functions
-    document.querySelectorAll(".group-tab").forEach(button => {
-      button.addEventListener("click", () => {
-        selectGroup(button.getAttribute("data-group"));
-      });
-    });
-
-    document.getElementById("searchInput").addEventListener("input", () => renderDishes(true));
-    document.getElementById("addDishBtn").addEventListener("click", addDish);
-
-    function selectGroup(group) {
-      currentGroup = group;
-      renderDishes(true);
-    }
-
+    // Render dishes list
     function renderDishes(reset = false) {
       const search = document.getElementById("searchInput").value.toLowerCase();
-      const container = document.getElementById("dishContainer");
-      if (reset) {
-        renderedCount = 0;
-        container.innerHTML = "";
-      }
       const dishes = (foodGroups[currentGroup] || []).filter(d => d.toLowerCase().includes(search));
-      const toShow = dishes.slice(renderedCount, renderedCount + displayLimit);
-      renderedCount += displayLimit;
-
-      toShow.forEach(dish => {
-        const card = document.createElement("div");
-        card.className = "bg-gray-700 p-4 rounded-lg shadow-md relative flex flex-col justify-between";
-        card.innerHTML = `
-          <div class="flex justify-between items-center mb-2">
-            <button class="text-yellow-400 hover:text-yellow-300" onclick="editDish('${dish.replace(/'/g, '\\')}')">✏️</button>
-            <button class="text-red-400 hover:text-red-300" onclick="openDeleteModal('${dish.replace(/'/g, '\\')}')">🗑️</button>
+      
+      dishContainer.innerHTML = dishes.map(dish => `
+        <div class="dish-card bg-gray-700 p-4 rounded-lg shadow-md relative fade-in">
+          <div class="flex justify-between items-start">
+            <div class="font-medium text-green-300 break-words pr-2">${dish}</div>
+            <div class="flex gap-1">
+                           <button onclick="editDish('${dish.replace(/'/g, '\\')}')" class="text-yellow-400 hover:text-yellow-300 text-sm p-1">
+                ✏️
+              </button>
+              <button onclick="openDeleteModal('${dish.replace(/'/g, '\\')}')" class="text-red-400 hover:text-red-300 text-sm p-1">
+                🗑️
+              </button>
+            </div>
           </div>
-          <div class="text-lg font-bold text-green-300">${dish}</div>
-        `;
-        container.appendChild(card);
-      });
+        </div>
+      `).join('');
     }
 
-    document.getElementById("dishContainer").addEventListener("scroll", function () {
-      const { scrollTop, scrollHeight, clientHeight } = this;
-      if (scrollTop + clientHeight >= scrollHeight - 10) renderDishes();
-    });
+    // Update dish statistics
+    function updateDishStats() {
+      const healthyCount = foodGroups["Healthy Home-style Meals"]?.length || 0;
+      const junkCount = foodGroups["Junk Food"]?.length || 0;
+      const dessertCount = foodGroups["Dessert"]?.length || 0;
+      
+      document.getElementById("healthyCount").textContent = healthyCount;
+      document.getElementById("junkCount").textContent = junkCount;
+      document.getElementById("dessertCount").textContent = dessertCount;
+      document.getElementById("totalCount").textContent = healthyCount + junkCount + dessertCount;
+    }
 
+    // Add new dish
     function addDish() {
       const name = document.getElementById("newDishName").value.trim();
       const group = document.getElementById("newDishGroup").value;
-      if (!name) return alert("Enter a dish name");
+      
+      if (!name) {
+        showToast("Please enter a dish name", "red");
+        return;
+      }
+      
       const list = foodGroups[group] || [];
-      if (list.includes(name)) return alert("Dish already exists");
+      if (list.includes(name)) {
+        showToast("Dish already exists", "red");
+        return;
+      }
+      
       list.push(name);
-      db.ref(`foodGroups/${group}`).set(list);
-      document.getElementById("newDishName").value = "";
-      if (group === currentGroup) renderDishes(true);
+      db.ref(`foodGroups/${group}`).set(list)
+        .then(() => {
+          document.getElementById("newDishName").value = "";
+          showToast("Dish added successfully!");
+          if (group === currentGroup) renderDishes(true);
+          updateDishStats();
+        })
+        .catch(error => {
+          showToast("Error adding dish: " + error.message, "red");
+        });
     }
 
+    // Edit dish functions
+    function editDish(dish) {
+      selectedDish = dish;
+      document.getElementById("editDishName").value = dish;
+      document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
+
+    function saveEditedDish() {
+      const newDish = document.getElementById("editDishName").value.trim();
+      
+      if (!newDish) {
+        showToast("Dish name cannot be empty", "red");
+        return;
+      }
+      
+      if (newDish === selectedDish) {
+        closeEditModal();
+        return;
+      }
+      
+      // Check if new name already exists
+      if (foodGroups[currentGroup].includes(newDish)) {
+        showToast("Dish with this name already exists", "red");
+        return;
+      }
+      
+      const list = foodGroups[currentGroup].map(d => d === selectedDish ? newDish : d);
+      db.ref(`foodGroups/${currentGroup}`).set(list)
+        .then(() => {
+          closeEditModal();
+          renderDishes(true);
+          showToast("Dish updated successfully!");
+        })
+        .catch(error => {
+          showToast("Error updating dish: " + error.message, "red");
+        });
+    }
+
+    // Delete dish functions
     function openDeleteModal(dish) {
       selectedDish = dish;
       document.getElementById("deleteModal").classList.remove("hidden");
@@ -309,64 +711,315 @@
 
     function deleteDish() {
       const list = foodGroups[currentGroup].filter(d => d !== selectedDish);
-      db.ref(`foodGroups/${currentGroup}`).set(list);
-      renderDishes(true);
-      closeDeleteModal();
+      db.ref(`foodGroups/${currentGroup}`).set(list)
+        .then(() => {
+          closeDeleteModal();
+          renderDishes(true);
+          updateDishStats();
+          showToast("Dish deleted successfully!");
+        })
+        .catch(error => {
+          showToast("Error deleting dish: " + error.message, "red");
+        });
     }
 
-    function editDish(dish) {
-      selectedDish = dish;
-      document.getElementById("editDishName").value = dish;
-      document.getElementById("editModal").classList.remove("hidden");
+    // Grocery list functions
+    function showGroceryModal() {
+      document.getElementById("groceryListContent").innerHTML = generateGroceryListHTML();
+      document.getElementById("groceryModal").classList.remove("hidden");
     }
 
-    function closeEditModal() {
-      document.getElementById("editModal").classList.add("hidden");
+    function closeGroceryModal() {
+      document.getElementById("groceryModal").classList.add("hidden");
     }
 
-    function saveEdit() {
-      const newDish = document.getElementById("editDishName").value.trim();
-      if (!newDish || newDish === selectedDish) return;
-      const list = foodGroups[currentGroup].map(d => d === selectedDish ? newDish : d);
-      db.ref(`foodGroups/${currentGroup}`).set(list);
-      renderDishes(true);
-      closeEditModal();
+    function generateGroceryListHTML() {
+      const groceryList = generateGroceryList();
+      let html = '';
+      
+      for (const [category, items] of Object.entries(groceryList)) {
+        if (items.length > 0) {
+          html += `
+            <div class="mb-6">
+              <h4 class="text-lg font-semibold text-green-400 mb-2 border-b border-gray-700 pb-1">${category}</h4>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${items.map(item => `
+                  <li class="flex items-center bg-gray-700 rounded px-3 py-2">
+                    <input type="checkbox" class="mr-2 h-4 w-4">
+                    <span>${item}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          `;
+        }
+      }
+      
+      return html || '<p class="text-gray-400">No ingredients found for the current meal plan.</p>';
     }
 
-    // Modal event listeners
-    document.getElementById("closeEditBtn").addEventListener("click", closeEditModal);
-    document.getElementById("saveEditBtn").addEventListener("click", saveEdit);
-    document.getElementById("closeDeleteBtn").addEventListener("click", closeDeleteModal);
-    document.getElementById("confirmDeleteBtn").addEventListener("click", deleteDish);
+    function generateGroceryList() {
+      const ingredients = new Set();
+      
+      currentPlan.forEach(day => {
+        const mealIngredients = ingredientMap[day.item] || [];
+        mealIngredients.forEach(ing => ingredients.add(ing));
+        
+        if (day.dessert) {
+          const dessertIngredients = ingredientMap[day.dessert] || [];
+          dessertIngredients.forEach(ing => ingredients.add(ing));
+        }
+      });
+
+      // Categorize ingredients
+      const categorized = {
+        "Produce": [],
+        "Meat/Fish": [],
+        "Dairy": [],
+        "Dry Goods": [],
+        "Bakery": [],
+        "Frozen": [],
+        "Canned Goods": [],
+        "Spices/Condiments": [],
+        "Other": []
+      };
+
+      ingredients.forEach(ing => {
+        if (/(apple|banana|broccoli|carrot|lettuce|tomato|onion|garlic|pepper|spinach|potato)/i.test(ing)) {
+          categorized["Produce"].push(ing);
+        } 
+        else if (/(chicken|beef|fish|pork|salmon|shrimp|bacon)/i.test(ing)) {
+          categorized["Meat/Fish"].push(ing);
+        }
+        else if (/(milk|cheese|yogurt|butter|cream|egg)/i.test(ing)) {
+          categorized["Dairy"].push(ing);
+        }
+        else if (/(flour|sugar|rice|pasta|quinoa|cereal|oat)/i.test(ing)) {
+          categorized["Dry Goods"].push(ing);
+        }
+        else if (/(bread|bun|crust|muffin)/i.test(ing)) {
+          categorized["Bakery"].push(ing);
+        }
+        else if (/(ice cream|frozen)/i.test(ing)) {
+          categorized["Frozen"].push(ing);
+        }
+        else if (/(sauce|ketchup|mustard|mayo|soy|vinegar|oil|spice)/i.test(ing)) {
+          categorized["Spices/Condiments"].push(ing);
+        }
+        else {
+          categorized["Other"].push(ing);
+        }
+      });
+
+      // Sort each category alphabetically
+      for (const category in categorized) {
+        categorized[category].sort();
+      }
+
+      return categorized;
+    }
+
+    function printGroceryList() {
+      const printWindow = window.open('', '', 'width=600,height=600');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Grocery List</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { color: #2e7d32; text-align: center; }
+              h2 { color: #388e3c; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+              ul { list-style-type: none; padding: 0; }
+              li { padding: 5px 0; }
+              @media print {
+                body { padding: 0; }
+                button { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Grocery List</h1>
+            ${document.getElementById("groceryListContent").innerHTML}
+            <button onclick="window.print()" style="margin-top: 20px; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              Print List
+            </button>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    function exportGroceryPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      doc.setFontSize(20);
+      doc.setTextColor(40, 167, 69);
+      doc.text("Grocery List", 105, 15, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
+      
+      const groceryList = generateGroceryList();
+      let yPosition = 40;
+      
+      for (const [category, items] of Object.entries(groceryList)) {
+        if (items.length > 0) {
+          // Add category heading
+          doc.setFontSize(14);
+          doc.setTextColor(40, 167, 69);
+          doc.text(category + ":", 15, yPosition);
+          yPosition += 8;
+          
+          // Add items
+          doc.setFontSize(12);
+          doc.setTextColor(0, 0, 0);
+          
+          items.forEach(item => {
+            if (yPosition > 280) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(`• ${item}`, 20, yPosition);
+            yPosition += 7;
+          });
+          
+          yPosition += 5; // Add extra space between categories
+        }
+      }
+      
+      doc.save('grocery-list.pdf');
+      showToast("Grocery list exported as PDF");
+    }
+
+    // PDF Export for meal plan
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Add title
+      doc.setFontSize(20);
+      doc.setTextColor(40, 167, 69);
+      doc.text("Meal Plan", 105, 15, { align: 'center' });
+      
+      // Add dates
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Generated: ${new Date().toLocaleDateString()} | Duration: ${document.getElementById("daysInput").value || 7} days`, 105, 25, { align: 'center' });
+      
+      // Add meal plan content
+      const planText = [];
+      currentPlan.forEach(day => {
+        planText.push(`Day ${day.day}: ${day.item} (${day.group})`);
+        if (day.dessert) planText.push(`   Dessert: ${day.dessert}`);
+      });
+      
+      doc.setFontSize(12);
+      doc.text(planText, 15, 40);
+      
+      // Add grocery list on second page
+      doc.addPage();
+      doc.setFontSize(20);
+      doc.setTextColor(40, 167, 69);
+      doc.text("Grocery List", 105, 15, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      
+      const groceryList = generateGroceryList();
+      let yPosition = 30;
+      
+      for (const [category, items] of Object.entries(groceryList)) {
+        if (items.length > 0) {
+          // Add category heading
+          doc.setFontSize(14);
+          doc.setTextColor(40, 167, 69);
+          doc.text(category + ":", 15, yPosition);
+          yPosition += 8;
+          
+          // Add items
+          doc.setFontSize(12);
+          doc.setTextColor(0, 0, 0);
+          
+          items.forEach(item => {
+            if (yPosition > 280) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(`• ${item}`, 20, yPosition);
+            yPosition += 7;
+          });
+          
+          yPosition += 5; // Add extra space between categories
+        }
+      }
+      
+      doc.save('meal-plan.pdf');
+      showToast("Meal plan exported as PDF");
+    }
+
+    // Share function
+    function sharePlan() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'My Meal Plan',
+          text: generateShareText(),
+          url: window.location.href
+        }).catch(err => {
+          console.log('Error sharing:', err);
+          fallbackShare();
+        });
+      } else {
+        fallbackShare();
+      }
+    }
+
+    function fallbackShare() {
+      const text = generateShareText();
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Meal plan copied to clipboard!");
+      }).catch(() => {
+        prompt("Copy to share:", text);
+      });
+    }
+
+    function generateShareText() {
+      let text = "🍽️ My Meal Plan:\n\n";
+      currentPlan.forEach(day => {
+        text += `Day ${day.day}: ${day.item}`;
+        if (day.dessert) text += ` + ${day.dessert}`;
+        text += "\n";
+      });
+      
+      text += "\n🛒 Grocery List:\n";
+      const groceryList = generateGroceryList();
+      for (const [category, items] of Object.entries(groceryList)) {
+        if (items.length > 0) {
+          text += `\n${category}:\n`;
+          text += items.map(item => `- ${item}`).join('\n');
+        }
+      }
+      
+      return text;
+    }
+
+    // Toast notification
+    function showToast(message, color = "green") {
+      toastMessage.textContent = message;
+      toast.className = `fixed bottom-4 left-1/2 transform -translate-x-1/2 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center`;
+      
+      if (color === "green") {
+        toast.classList.add("bg-green-500");
+      } else if (color === "red") {
+        toast.classList.add("bg-red-500");
+      }
+      
+      toast.classList.remove("hidden");
+      
+      setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 3000);
+    }
   </script>
-
-  <style>
-    .switch-btn, .switch-dessert-btn {
-      position: absolute;
-      top: 1rem;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-weight: 600;
-      z-index: 10;
-      transition: background-color 0.3s ease;
-    }
-    .switch-btn {
-      right: 1rem;
-      background-color: #4ade80;
-      color: black;
-    }
-    .switch-btn:hover {
-      background-color: #22c55e;
-    }
-    .switch-dessert-btn {
-      right: 6rem;
-      background-color: #f472b6;
-      color: black;
-    }
-    .switch-dessert-btn:hover {
-      background-color: #ec4899;
-    }
-  </style>
 </body>
 </html>
