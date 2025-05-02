@@ -1,595 +1,1358 @@
 <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Meal Details</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-          <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-          <style>
-           body {
-      background-color: #0f172a;
-      color: #f8fafc;
-      font-family: 'Segoe UI', sans-serif;
-      padding: 1.5rem;
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Meal Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --secondary: #3b82f6;
+      --dark: #1e293b;
+      --darker: #0f172a;
+      --light: #f8fafc;
     }
-
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 2rem;
-      background-color: #1e293b;
-      border-radius: 1.5rem;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--darker);
+      color: var(--light);
     }
-
-    .section-box {
-      background-color: #334155;
-      padding: 1.5rem;
-      border-radius: 1rem;
-      margin-bottom: 2rem;
+    
+    .meal-card {
+      transition: all 0.3s ease;
+      transform-style: preserve-3d;
     }
-
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      text-transform: capitalize;
-      color: #f1f5f9;
+    
+    .meal-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
-
-    .btn {
-      background-color: #22c55e;
-      color: white;
-      font-weight: bold;
-      padding: 0.6rem 1.5rem;
-      border-radius: 0.75rem;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s ease-in-out;
-      display: inline-block;
+    
+    .dish-card {
+      transition: all 0.2s ease;
     }
-
-    .btn:hover {
-      background-color: #16a34a;
+    
+    .dish-card:hover {
+      transform: translateY(-3px);
     }
-
-    .edit-btn,
-    .delete-btn {
-      background-color: transparent;
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-left: 1rem;
-      cursor: pointer;
-      text-decoration: underline;
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
     }
-
-    .textarea,
-    .input {
-      background-color: #1e293b;
-      color: #f8fafc;
-      border: 1px solid #475569;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      width: 100%;
-      margin-bottom: 1rem;
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    .textarea:focus,
-    .input:focus {
-      outline: none;
-      border-color: #22c55e;
-    }
-
-    .ingredient-list {
-      list-style: disc;
-      padding-left: 1.5rem;
-    }
-
-    .method-list {
-      list-style: decimal;
-      padding-left: 1.5rem;
-    }
-
-    .rating-stars {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 1rem;
-    }
-
+    
+    /* Star rating */
     .star {
-      font-size: 2rem;
+      font-size: 1.8rem;
       cursor: pointer;
       color: #64748b;
       transition: transform 0.2s ease;
     }
-
+    
     .star:hover {
       transform: scale(1.1);
     }
-
+    
     .star.filled {
       color: #facc15;
     }
-
-    .comment {
-      background-color: #1e293b;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      margin-bottom: 0.5rem;
-      position: relative;
-    }
-
-    .comment-actions {
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-    }
-
-    .timestamp {
-      font-size: 0.75rem;
-      color: #94a3b8;
-    }
-
-    @media (max-width: 600px) {
-      .star {
-        font-size: 1.5rem;
-      }
-    }
-
-    .toast {
+    
+    /* Toast notification */
+    #toast {
       position: fixed;
-      bottom: 2rem;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #22c55e;
+      background-color: var(--primary);
       color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 1rem;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000;
       display: none;
+      align-items: center;
     }
-
-    .toast.show {
-      display: block;
+    
+    #toast.show {
+      display: flex;
+      animation: fadeInOut 3s ease-in-out;
     }
-
-    .back-button {
-      display: block;
+    
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+    
+    /* Cook Mode */
+    .cook-mode {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--darker);
+      z-index: 100;
+      padding: 20px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      margin-top: 2rem;
     }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="section-box text-center">
-              <h1 class="text-3xl font-bold text-green-400" id="mealName">meal name</h1>
-            </div>
+    
+    .cook-mode.active {
+      transform: translateY(0);
+    }
+    
+    .cook-step {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      max-width: 800px;
+    }
+    
+    .cook-progress {
+      font-size: 1.2rem;
+      color: var(--primary);
+      margin-bottom: 2rem;
+    }
+    
+    .cook-timer {
+      font-size: 2rem;
+      color: #facc15;
+      margin: 1rem 0;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background-color: rgba(0,0,0,0.3);
+    }
+    
+    .cook-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .cook-controls button {
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      min-width: 120px;
+    }
+    
+    .voice-feedback {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .voice-feedback.show {
+      opacity: 1;
+    }
+    
+    /* Comments section */
+    .comments-section {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--darker);
+      z-index: 100;
+      padding: 20px;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .comments-section.active {
+      transform: translateY(0);
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-green-600 to-blue-600 p-4 shadow-lg sticky top-0 z-10">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-white flex items-center">
+        <span class="mr-2">🌱</span> Meal Details
+      </h1>
+      <a href="index.html" class="text-white hover:text-gray-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </a>
+    </div>
+  </header>
 
-            <div class="section-box">
-              <div class="flex justify-between items-center">
-                <h2 class="section-title">meal description</h2>
-                <button id="editDescriptionBtn" class="edit-btn">edit</button>
-              </div>
-              <div id="mealDescriptionText" class="mb-2"></div>
-              <textarea id="mealDescriptionInput" class="textarea hidden" rows="4"></textarea>
-              <button id="saveDescriptionBtn" class="btn hidden">save</button>
-            </div>
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- Meal Header -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6 text-center">
+      <h1 id="mealName" class="text-3xl font-bold text-green-400 mb-2">Loading...</h1>
+      <div class="flex justify-center items-center gap-4 mb-4">
+        <div class="flex items-center">
+          <span id="avgRating" class="text-yellow-300 font-semibold">Rating: 0.0</span>
+        </div>
+        <div class="flex items-center">
+          <span id="ratingCount" class="text-gray-400">(0 votes)</span>
+        </div>
+      </div>
+      <div class="flex justify-center gap-4">
+        <button id="favoriteBtn" class="flex items-center gap-1 text-gray-400 hover:text-red-500 transition-colors">
+          <svg id="favoriteIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span>Favorite</span>
+        </button>
+        <button id="commentsBtn" class="flex items-center gap-1 text-gray-400 hover:text-blue-400 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span>Comments</span>
+        </button>
+        <button id="cookModeBtn" class="flex items-center gap-1 text-gray-400 hover:text-green-400 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <span>Cook Mode</span>
+        </button>
+      </div>
+    </div>
 
-            <div class="section-box">
-              <div class="flex justify-between items-center">
-                <h2 class="section-title">ingredients</h2>
-                <button id="editIngredientsBtn" class="edit-btn">edit</button>
-              </div>
-              <ul id="ingredientsList" class="ingredient-list"></ul>
-              <textarea id="ingredientsInput" class="textarea hidden" rows="4" placeholder="Add each ingredient separated by comma"></textarea>
-              <button id="saveIngredientsBtn" class="btn hidden">save</button>
-            </div>
+    <!-- Description -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-green-400">Description</h2>
+        <button id="editDescriptionBtn" class="text-blue-400 hover:text-blue-300 text-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+          Edit
+        </button>
+      </div>
+      <p id="mealDescriptionText" class="text-gray-300 mb-4">Loading description...</p>
+      <textarea id="mealDescriptionInput" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white hidden" rows="4"></textarea>
+      <div class="flex justify-end gap-2 mt-2 hidden" id="descriptionButtons">
+        <button id="saveDescriptionBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+          Save
+        </button>
+        <button id="cancelDescriptionBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
 
-            <div class="section-box">
-              <div class="flex justify-between items-center">
-                <h2 class="section-title">method</h2>
-                <button id="editMethodBtn" class="edit-btn">edit</button>
-              </div>
-              <ol id="methodList" class="method-list"></ol>
-              <textarea id="methodInput" class="textarea hidden" rows="4" placeholder="Add each step separated by comma"></textarea>
-              <button id="saveMethodBtn" class="btn hidden">save</button>
-            </div>
+    <!-- Ingredients -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-green-400">Ingredients</h2>
+        <button id="editIngredientsBtn" class="text-blue-400 hover:text-blue-300 text-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+          Edit
+        </button>
+      </div>
+      <ul id="ingredientsList" class="grid grid-cols-1 gap-2 mb-4"></ul>
+      <textarea id="ingredientsInput" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white hidden" rows="4" placeholder="Enter ingredients, separated by commas"></textarea>
+      <div class="flex justify-end gap-2 mt-2 hidden" id="ingredientsButtons">
+        <button id="saveIngredientsBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+          Save
+        </button>
+        <button id="cancelIngredientsBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
 
-            <div class="section-box">
-              <h2 class="section-title">rate this meal</h2>
-              <div class="rating-stars" id="starsContainer"></div>
-              <p class="text-center mt-4 text-lg font-semibold" id="avgRating">average rating: loading...</p>
-              <p id="errorMessage" class="text-red-400 text-center mt-2"></p>
-            </div>
+    <!-- Instructions -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-green-400">Instructions</h2>
+        <button id="editMethodBtn" class="text-blue-400 hover:text-blue-300 text-sm flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+          Edit
+        </button>
+      </div>
+      <ol id="methodList" class="space-y-2 mb-4"></ol>
+      <textarea id="methodInput" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white hidden" rows="4" placeholder="Enter instructions, one step per line"></textarea>
+      <div class="flex justify-end gap-2 mt-2 hidden" id="methodButtons">
+        <button id="saveMethodBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
+          Save
+        </button>
+        <button id="cancelMethodBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+          Cancel
+        </button>
+      </div>
+    </div>
 
-            <div class="section-box">
-              <h2 class="section-title">family comments</h2>
-              <textarea id="commentInput" class="textarea" placeholder="write your comment..."></textarea>
-              <button id="saveCommentBtn" class="btn mb-4">save comment</button>
-              <div id="commentsList"></div>
-            </div>
+    <!-- Rating -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-6">
+      <h2 class="text-xl font-bold text-green-400 mb-4 text-center">Rate This Meal</h2>
+      <div class="flex justify-center mb-4">
+        <div class="rating-stars" id="starsContainer"></div>
+      </div>
+      <p id="errorMessage" class="text-red-400 text-center"></p>
+    </div>
+  </main>
 
-            <a href="index.html" class="btn block text-center back-button">← back to meal planner</a>
+  <!-- Cook Mode -->
+  <div class="cook-mode" id="cookMode">
+    <div class="cook-progress" id="cookProgress">Step 1/5</div>
+    <div class="cook-step" id="cookStepText">Preheat oven to 350°F (175°C)</div>
+    
+    <div class="cook-timer hidden" id="cookTimer">00:00</div>
+    
+    <div class="cook-controls">
+      <button id="prevStepBtn" class="bg-blue-500 hover:bg-blue-600 text-white">
+        Previous
+      </button>
+      <button id="nextStepBtn" class="bg-green-500 hover:bg-green-600 text-white">
+        Next
+      </button>
+      <button id="repeatStepBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white">
+        Repeat
+      </button>
+      <button id="exitCookModeBtn" class="bg-red-500 hover:bg-red-600 text-white">
+        Exit
+      </button>
+    </div>
+    
+    <div class="voice-feedback" id="voiceFeedback">Listening...</div>
+  </div>
+
+  <!-- Comments Section -->
+  <div class="comments-section" id="commentsSection">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-green-400">Comments & Notes</h2>
+      <button id="exitComments" class="text-gray-400 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="bg-gray-800 rounded-xl p-4 mb-6">
+      <h3 class="text-lg font-semibold text-green-300 mb-3">Add Comment</h3>
+      <textarea id="commentInput" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white mb-3" rows="3" placeholder="Share your thoughts about this meal..."></textarea>
+      <button id="saveCommentBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg w-full">
+        Post Comment
+      </button>
+    </div>
+    
+    <div class="bg-gray-800 rounded-xl p-4 mb-6">
+      <h3 class="text-lg font-semibold text-green-300 mb-3">Add Note</h3>
+      <textarea id="noteInput" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white mb-3" rows="3" placeholder="Add your personal notes about this meal..."></textarea>
+      <button id="saveNoteBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg w-full">
+        Save Note
+      </button>
+    </div>
+    
+    <div id="commentsList" class="space-y-4"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      </svg>
+      <span id="toastMessage">Changes saved successfully!</span>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+  </div>
+
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
+      authDomain: "meal-b14ca.firebaseapp.com",
+      databaseURL: "https://meal-b14ca-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "meal-b14ca",
+      storageBucket: "meal-b14ca.appspot.com",
+      messagingSenderId: "190610959035",
+      appId: "1:190610959035:web:6d078d26d0e7e07c86979e",
+      measurementId: "G-PKD67YL45V"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Get meal name from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const mealNameFromURL = urlParams.get('meal');
+    
+    // Create references
+    const mealRef = db.ref(`foodGroups/${mealNameFromURL}`);
+    const favoritesRef = db.ref(`userFavorites/${getUserId()}`);
+    const notesRef = db.ref(`userNotes/${getUserId()}/${mealNameFromURL}`);
+    
+    // DOM Elements
+    const mealNameEl = document.getElementById('mealName');
+    const mealDescriptionText = document.getElementById('mealDescriptionText');
+    const mealDescriptionInput = document.getElementById('mealDescriptionInput');
+    const saveDescriptionBtn = document.getElementById('saveDescriptionBtn');
+    const editDescriptionBtn = document.getElementById('editDescriptionBtn');
+    const cancelDescriptionBtn = document.getElementById('cancelDescriptionBtn');
+    const descriptionButtons = document.getElementById('descriptionButtons');
+    
+    const ingredientsList = document.getElementById('ingredientsList');
+    const ingredientsInput = document.getElementById('ingredientsInput');
+    const saveIngredientsBtn = document.getElementById('saveIngredientsBtn');
+    const editIngredientsBtn = document.getElementById('editIngredientsBtn');
+    const cancelIngredientsBtn = document.getElementById('cancelIngredientsBtn');
+    const ingredientsButtons = document.getElementById('ingredientsButtons');
+    
+    const methodList = document.getElementById('methodList');
+    const methodInput = document.getElementById('methodInput');
+    const saveMethodBtn = document.getElementById('saveMethodBtn');
+    const editMethodBtn = document.getElementById('editMethodBtn');
+    const cancelMethodBtn = document.getElementById('cancelMethodBtn');
+    const methodButtons = document.getElementById('methodButtons');
+    
+    const starsContainer = document.getElementById('starsContainer');
+    const avgRatingEl = document.getElementById('avgRating');
+    const ratingCountEl = document.getElementById('ratingCount');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    const favoriteIcon = document.getElementById('favoriteIcon');
+    
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    // Cook Mode Elements
+    const cookModeBtn = document.getElementById('cookModeBtn');
+    const cookMode = document.getElementById('cookMode');
+    const cookStepText = document.getElementById('cookStepText');
+    const cookProgress = document.getElementById('cookProgress');
+    const cookTimer = document.getElementById('cookTimer');
+    const prevStepBtn = document.getElementById('prevStepBtn');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const repeatStepBtn = document.getElementById('repeatStepBtn');
+    const exitCookModeBtn = document.getElementById('exitCookModeBtn');
+    const voiceFeedback = document.getElementById('voiceFeedback');
+    
+    // Comments Section Elements
+    const commentsBtn = document.getElementById('commentsBtn');
+    const commentsSection = document.getElementById('commentsSection');
+    const exitComments = document.getElementById('exitComments');
+    const commentInput = document.getElementById('commentInput');
+    const saveCommentBtn = document.getElementById('saveCommentBtn');
+    const noteInput = document.getElementById('noteInput');
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+    const commentsList = document.getElementById('commentsList');
+    
+    // Global variables
+    let mealData = {};
+    let userRating = null;
+    let isFavorite = false;
+    let userNote = '';
+    let commentsCache = {};
+    let currentStep = 0;
+    let totalSteps = 0;
+    let activeTimer = null;
+    let timerEnd = null;
+    let speechRecognition = null;
+    const RATED_KEY_PREFIX = `meal_${mealNameFromURL}_rated`;
+    
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      loadMealData();
+      checkFavoriteStatus();
+      loadUserNote();
+      
+      // Initialize speech recognition if available
+      initSpeechRecognition();
+    });
+    
+    // Helper function to get user ID
+    function getUserId() {
+      let userId = localStorage.getItem('mealPlannerUserId');
+      if (!userId) {
+        userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('mealPlannerUserId', userId);
+      }
+      return userId;
+    }
+    
+    // Initialize speech recognition
+    function initSpeechRecognition() {
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          speechRecognition = new SpeechRecognition();
+          speechRecognition.continuous = true;
+          speechRecognition.interimResults = true;
+          
+          speechRecognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+              .map(result => result[0])
+              .map(result => result.transcript)
+              .join('');
+            
+            // Show voice feedback
+            voiceFeedback.classList.add('show');
+            
+            // Process commands
+            if (event.results[0].isFinal) {
+              processVoiceCommand(transcript.toLowerCase());
+              voiceFeedback.classList.remove('show');
+            }
+          };
+          
+          speechRecognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            voiceFeedback.classList.remove('show');
+          };
+        }
+      } catch (e) {
+        console.log('Speech recognition not supported', e);
+      }
+    }
+    
+    // Process voice commands
+    function processVoiceCommand(transcript) {
+      if (!cookMode.classList.contains('active')) return;
+      
+      if (transcript.includes('next')) {
+        goToNextStep();
+      } else if (transcript.includes('previous') || transcript.includes('back')) {
+        goToPrevStep();
+      } else if (transcript.includes('repeat')) {
+        speakCurrentStep();
+      } else if (transcript.includes('exit') || transcript.includes('close')) {
+        closeCookMode();
+      } else if (transcript.includes('set timer')) {
+        const minutesMatch = transcript.match(/set timer (\d+)/);
+        if (minutesMatch && minutesMatch[1]) {
+          startTimer(parseInt(minutesMatch[1]));
+        }
+      } else if (transcript.includes('stop timer')) {
+        stopTimer();
+      }
+    }
+    
+    // Start voice recognition
+    function startVoiceRecognition() {
+      if (speechRecognition) {
+        try {
+          speechRecognition.start();
+        } catch (e) {
+          console.log('Speech recognition error', e);
+        }
+      }
+    }
+    
+    // Stop voice recognition
+    function stopVoiceRecognition() {
+      if (speechRecognition) {
+        speechRecognition.stop();
+      }
+    }
+    
+    // Setup all event listeners
+    function setupEventListeners() {
+      // Description editing
+      editDescriptionBtn.addEventListener('click', () => {
+        mealDescriptionInput.value = mealDescriptionText.textContent;
+        toggleEditMode('description', true);
+      });
+      saveDescriptionBtn.addEventListener('click', saveDescription);
+      cancelDescriptionBtn.addEventListener('click', () => toggleEditMode('description', false));
+      
+      // Ingredients editing
+      editIngredientsBtn.addEventListener('click', () => {
+        ingredientsInput.value = mealData.ingredients ? mealData.ingredients.join(', ') : '';
+        toggleEditMode('ingredients', true);
+      });
+      saveIngredientsBtn.addEventListener('click', saveIngredients);
+      cancelIngredientsBtn.addEventListener('click', () => toggleEditMode('ingredients', false));
+      
+      // Method editing
+      editMethodBtn.addEventListener('click', () => {
+        methodInput.value = mealData.method ? mealData.method.join('\n') : '';
+        toggleEditMode('method', true);
+      });
+      saveMethodBtn.addEventListener('click', saveMethod);
+      cancelMethodBtn.addEventListener('click', () => toggleEditMode('method', false));
+      
+      // Favorites
+      favoriteBtn.addEventListener('click', toggleFavorite);
+      
+      // Cook Mode
+      cookModeBtn.addEventListener('click', openCookMode);
+      exitCookModeBtn.addEventListener('click', closeCookMode);
+      prevStepBtn.addEventListener('click', goToPrevStep);
+      nextStepBtn.addEventListener('click', goToNextStep);
+      repeatStepBtn.addEventListener('click', speakCurrentStep);
+      
+      // Comments Section
+      commentsBtn.addEventListener('click', openCommentsSection);
+      exitComments.addEventListener('click', closeCommentsSection);
+      saveCommentBtn.addEventListener('click', saveComment);
+      saveNoteBtn.addEventListener('click', saveNote);
+      commentsList.addEventListener('click', handleCommentActions);
+    }
+    
+    // Load meal data from Firebase
+    function loadMealData() {
+      loadingSpinner.classList.remove('hidden');
+      
+      mealRef.on('value', (snapshot) => {
+        mealData = snapshot.val() || {};
+        updateUI();
+        loadingSpinner.classList.add('hidden');
+      });
+      
+      // Listen for rating changes
+      mealRef.child('ratings').on('value', (snapshot) => {
+        updateRatingInfo(snapshot.val());
+      });
+      
+      // Listen for comment changes
+      mealRef.child('comments').on('value', (snapshot) => {
+        loadComments(snapshot.val());
+      });
+    }
+    
+    // Update UI with meal data
+    function updateUI() {
+      mealNameEl.textContent = mealNameFromURL;
+      
+      // Description
+      mealDescriptionText.textContent = mealData.description || 'No description available.';
+      mealDescriptionInput.value = mealData.description || '';
+      
+      // Ingredients
+      if (mealData.ingredients && mealData.ingredients.length > 0) {
+        ingredientsList.innerHTML = mealData.ingredients.map(ing => `
+          <li class="bg-gray-700 p-3 rounded-lg flex items-start">
+            <input type="checkbox" class="mt-1 mr-2 h-5 w-5">
+            <span>${ing}</span>
+          </li>
+        `).join('');
+      } else {
+        ingredientsList.innerHTML = '<li class="text-gray-400">No ingredients listed.</li>';
+      }
+      
+      // Method
+      if (mealData.method && mealData.method.length > 0) {
+        methodList.innerHTML = mealData.method.map((step, index) => `
+          <li class="bg-gray-700 p-3 rounded-lg">
+            <span class="font-bold text-green-400">Step ${index + 1}:</span> ${step}
+          </li>
+        `).join('');
+      } else {
+        methodList.innerHTML = '<li class="text-gray-400">No instructions available.</li>';
+      }
+      
+      // Setup rating stars
+      setupRatingStars();
+    }
+    
+    // Setup rating stars
+    function setupRatingStars() {
+      starsContainer.innerHTML = '';
+      
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('span');
+        star.className = 'star';
+        star.textContent = '★';
+        star.dataset.rating = i;
+        star.addEventListener('click', handleStarClick);
+        star.addEventListener('mouseover', () => highlightStars(i));
+        star.addEventListener('mouseout', resetStars);
+        starsContainer.appendChild(star);
+      }
+      
+      // Highlight stars based on user's rating
+      resetStars();
+    }
+    
+    // Handle star click
+    function handleStarClick(event) {
+      if (checkIfAlreadyRated()) {
+        showToast('You have already rated this meal', 'red');
+        return;
+      }
+      
+      const rating = parseInt(event.target.dataset.rating);
+      userRating = rating;
+      
+      // Save rating to Firebase
+      mealRef.child('ratings').child(getUserId()).set(rating)
+        .then(() => {
+          showToast('Rating saved!');
+          markAsRated();
+        })
+        .catch(error => {
+          showToast('Error saving rating: ' + error.message, 'red');
+        });
+    }
+    
+    // Highlight stars on hover
+    function highlightStars(rating) {
+      document.querySelectorAll('#starsContainer .star').forEach(star => {
+        const starValue = parseInt(star.dataset.rating);
+        star.classList.toggle('filled', starValue <= rating);
+      });
+    }
+    
+    // Reset stars to current rating
+    function resetStars() {
+      document.querySelectorAll('#starsContainer .star').forEach(star => {
+        const starValue = parseInt(star.dataset.rating);
+        star.classList.remove('filled');
+        
+        if (userRating && starValue <= userRating) {
+          star.classList.add('filled');
+        } else if (mealData.ratings && mealData.ratings[getUserId()] && starValue <= mealData.ratings[getUserId()]) {
+          star.classList.add('filled');
+        }
+      });
+    }
+    
+    // Update rating info
+    function updateRatingInfo(ratings) {
+      if (!ratings) {
+        avgRatingEl.textContent = 'Rating: 0.0';
+        ratingCountEl.textContent = '(0 votes)';
+        return;
+      }
+      
+      let total = 0;
+      let count = 0;
+      
+      for (const userId in ratings) {
+        total += ratings[userId];
+        count++;
+      }
+      
+      const average = (total / count).toFixed(1);
+      avgRatingEl.textContent = `Rating: ${average}`;
+      ratingCountEl.textContent = `(${count} votes)`;
+      
+      // Check if current user has rated
+      if (ratings[getUserId()]) {
+        userRating = ratings[getUserId()];
+        resetStars();
+      }
+    }
+    
+    // Check if user has already rated
+    function checkIfAlreadyRated() {
+      return localStorage.getItem(RATED_KEY_PREFIX) === 'true';
+    }
+    
+    // Mark meal as rated by user
+    function markAsRated() {
+      localStorage.setItem(RATED_KEY_PREFIX, 'true');
+    }
+    
+    // Toggle edit mode for different sections
+    function toggleEditMode(section, showEdit) {
+      switch(section) {
+        case 'description':
+          mealDescriptionText.classList.toggle('hidden', showEdit);
+          mealDescriptionInput.classList.toggle('hidden', !showEdit);
+          descriptionButtons.classList.toggle('hidden', !showEdit);
+          editDescriptionBtn.classList.toggle('hidden', showEdit);
+          break;
+          
+        case 'ingredients':
+          ingredientsList.classList.toggle('hidden', showEdit);
+          ingredientsInput.classList.toggle('hidden', !showEdit);
+          ingredientsButtons.classList.toggle('hidden', !showEdit);
+          editIngredientsBtn.classList.toggle('hidden', showEdit);
+          break;
+          
+        case 'method':
+          methodList.classList.toggle('hidden', showEdit);
+          methodInput.classList.toggle('hidden', !showEdit);
+          methodButtons.classList.toggle('hidden', !showEdit);
+          editMethodBtn.classList.toggle('hidden', showEdit);
+          break;
+      }
+    }
+    
+    // Save description
+    function saveDescription() {
+      const newDescription = mealDescriptionInput.value.trim();
+      mealRef.update({ description: newDescription })
+        .then(() => {
+          mealDescriptionText.textContent = newDescription || 'No description available.';
+          toggleEditMode('description', false);
+          showToast('Description updated!');
+        })
+        .catch(error => {
+          showToast('Error updating description: ' + error.message, 'red');
+        });
+    }
+    
+    // Save ingredients
+    function saveIngredients() {
+      const ingredientsText = ingredientsInput.value.trim();
+      const newIngredients = ingredientsText.split(',').map(ing => ing.trim()).filter(ing => ing);
+      
+      mealRef.update({ ingredients: newIngredients })
+        .then(() => {
+          if (newIngredients.length > 0) {
+            ingredientsList.innerHTML = newIngredients.map(ing => `
+              <li class="bg-gray-700 p-3 rounded-lg flex items-start">
+                <input type="checkbox" class="mt-1 mr-2 h-5 w-5">
+                <span>${ing}</span>
+              </li>
+            `).join('');
+          } else {
+            ingredientsList.innerHTML = '<li class="text-gray-400">No ingredients listed.</li>';
+          }
+          toggleEditMode('ingredients', false);
+          showToast('Ingredients updated!');
+        })
+        .catch(error => {
+          showToast('Error updating ingredients: ' + error.message, 'red');
+        });
+    }
+    
+    // Save method
+    function saveMethod() {
+      const methodText = methodInput.value.trim();
+      const newMethod = methodText.split('\n').map(step => step.trim()).filter(step => step);
+      
+      mealRef.update({ method: newMethod })
+        .then(() => {
+          if (newMethod.length > 0) {
+            methodList.innerHTML = newMethod.map((step, index) => `
+              <li class="bg-gray-700 p-3 rounded-lg">
+                <span class="font-bold text-green-400">Step ${index + 1}:</span> ${step}
+              </li>
+            `).join('');
+          } else {
+            methodList.innerHTML = '<li class="text-gray-400">No instructions available.</li>';
+          }
+          toggleEditMode('method', false);
+          showToast('Instructions updated!');
+        })
+        .catch(error => {
+          showToast('Error updating instructions: ' + error.message, 'red');
+        });
+    }
+    
+    // Check favorite status
+    function checkFavoriteStatus() {
+      favoritesRef.child(mealNameFromURL).once('value', (snapshot) => {
+        isFavorite = snapshot.exists();
+        updateFavoriteUI();
+      });
+    }
+    
+    // Toggle favorite status
+    function toggleFavorite() {
+      if (isFavorite) {
+        favoritesRef.child(mealNameFromURL).remove()
+          .then(() => {
+            isFavorite = false;
+            updateFavoriteUI();
+            showToast('Removed from favorites');
+          })
+          .catch(error => {
+            showToast('Error removing favorite: ' + error.message, 'red');
+          });
+      } else {
+        favoritesRef.child(mealNameFromURL).set(true)
+          .then(() => {
+            isFavorite = true;
+            updateFavoriteUI();
+            showToast('Added to favorites!');
+          })
+          .catch(error => {
+            showToast('Error adding favorite: ' + error.message, 'red');
+          });
+      }
+    }
+    
+    // Update favorite button UI
+    function updateFavoriteUI() {
+      if (isFavorite) {
+        favoriteIcon.classList.add('text-red-500', 'fill-current');
+        favoriteIcon.classList.remove('text-gray-400');
+        favoriteBtn.classList.add('text-red-500');
+        favoriteBtn.classList.remove('text-gray-400');
+      } else {
+        favoriteIcon.classList.remove('text-red-500', 'fill-current');
+        favoriteIcon.classList.add('text-gray-400');
+        favoriteBtn.classList.remove('text-red-500');
+        favoriteBtn.classList.add('text-gray-400');
+      }
+    }
+    
+    // Load user note
+    function loadUserNote() {
+      notesRef.once('value', (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+          userNote = note;
+          noteInput.value = note;
+        }
+      });
+    }
+    
+    // Save user note
+    function saveNote() {
+      const noteText = noteInput.value.trim();
+      userNote = noteText;
+      
+      notesRef.set(noteText)
+        .then(() => {
+          showToast('Note saved!');
+        })
+        .catch(error => {
+          showToast('Error saving note: ' + error.message, 'red');
+        });
+    }
+    
+    // Load comments
+    function loadComments(comments) {
+      if (!comments) {
+        commentsList.innerHTML = '<p class="text-gray-400 text-center">No comments yet. Be the first to comment!</p>';
+        return;
+      }
+      
+      // Clear cache
+      commentsCache = {};
+      
+      // Sort comments by timestamp (newest first)
+      const sortedComments = Object.entries(comments).sort((a, b) => {
+        return new Date(b[1].timestamp) - new Date(a[1].timestamp);
+      });
+      
+      if (sortedComments.length === 0) {
+        commentsList.innerHTML = '<p class="text-gray-400 text-center">No comments yet. Be the first to comment!</p>';
+        return;
+      }
+      
+      commentsList.innerHTML = '';
+      
+      sortedComments.forEach(([key, comment]) => {
+        commentsCache[key] = comment;
+        addCommentToUI(key, comment);
+      });
+    }
+    
+    // Add comment to UI
+    function addCommentToUI(key, comment) {
+      const commentEl = document.createElement('div');
+      commentEl.className = 'bg-gray-700 p-4 rounded-lg relative';
+      commentEl.dataset.key = key;
+      
+      // Format timestamp
+      const date = new Date(comment.timestamp);
+      const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      commentEl.innerHTML = `
+        <div class="flex justify-between items-start mb-2">
+          <span class="font-semibold text-green-400">${comment.userName || 'Anonymous'}</span>
+          <span class="text-xs text-gray-400">${formattedDate}</span>
+        </div>
+        <p id="commentText-${key}" class="mb-2">${comment.comment}</p>
+        <textarea id="commentInput-${key}" class="w-full bg-gray-600 border border-gray-500 rounded-lg p-2 text-white hidden mb-2" rows="3">${comment.comment}</textarea>
+        
+        ${comment.userId === getUserId() ? `
+          <div class="flex justify-end gap-2">
+            <button class="edit-comment-btn text-blue-400 hover:text-blue-300 text-sm" data-key="${key}">
+              Edit
+            </button>
+            <button class="delete-comment-btn text-red-400 hover:text-red-300 text-sm" data-key="${key}">
+              Delete
+            </button>
+            <button class="save-comment-btn bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm hidden" data-key="${key}">
+              Save
+            </button>
+            <button class="cancel-comment-btn bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm hidden" data-key="${key}">
+              Cancel
+            </button>
           </div>
-
-          <div id="toast" class="toast">Changes saved!</div>
-          <script>
-            const firebaseConfig = {
-                apiKey: "AIzaSyDggOxw9S18mf4l-PqkMqVg3YYGc612tQA",
-                authDomain: "meal-b14ca.firebaseapp.com",
-                databaseURL: "https://meal-b14ca-default-rtdb.europe-west1.firebasedatabase.app",
-                projectId: "meal-b14ca",
-                storageBucket: "meal-b14ca.appspot.com",
-                messagingSenderId: "190610959035",
-                appId: "1:190610959035:web:6d078d26d0e7e07c86979e"
-            };
+        ` : ''}
+      `;
+      
+      commentsList.appendChild(commentEl);
+    }
+    
+    // Save new comment
+    function saveComment() {
+      const commentText = commentInput.value.trim();
+      
+      if (!commentText) {
+        showToast('Please enter a comment', 'red');
+        return;
+      }
+      
+      const newComment = {
+        comment: commentText,
+        timestamp: new Date().toISOString(),
+        userId: getUserId(),
+        userName: 'You' // In a real app, you would get the user's name from auth
+      };
+      
+      mealRef.child('comments').push(newComment)
+        .then(() => {
+          commentInput.value = '';
+          showToast('Comment posted!');
+        })
+        .catch(error => {
+          showToast('Error posting comment: ' + error.message, 'red');
+        });
+    }
+    
+    // Handle comment actions (edit/delete)
+    function handleCommentActions(event) {
+      const target = event.target;
+      const key = target.getAttribute('data-key');
+      
+      if (!key) return;
+      
+      if (target.classList.contains('edit-comment-btn')) {
+        editComment(key);
+      } else if (target.classList.contains('delete-comment-btn')) {
+        deleteComment(key);
+      } else if (target.classList.contains('save-comment-btn')) {
+        saveEditedComment(key);
+      } else if (target.classList.contains('cancel-comment-btn')) {
+        cancelEditComment(key);
+      }
+    }
+    
+    // Edit comment
+    function editComment(key) {
+      const commentEl = document.querySelector(`[data-key="${key}"]`);
+      const commentText = commentEl.querySelector(`#commentText-${key}`);
+      const commentInput = commentEl.querySelector(`#commentInput-${key}`);
+      const editBtn = commentEl.querySelector('.edit-comment-btn');
+      const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+      const saveBtn = commentEl.querySelector('.save-comment-btn');
+      const cancelBtn = commentEl.querySelector('.cancel-comment-btn');
+      
+      commentText.classList.add('hidden');
+      commentInput.classList.remove('hidden');
+      editBtn.classList.add('hidden');
+      deleteBtn.classList.add('hidden');
+      saveBtn.classList.remove('hidden');
+      cancelBtn.classList.remove('hidden');
+    }
+    
+    // Save edited comment
+    function saveEditedComment(key) {
+      const commentEl = document.querySelector(`[data-key="${key}"]`);
+      const commentText = commentEl.querySelector(`#commentText-${key}`);
+      const commentInput = commentEl.querySelector(`#commentInput-${key}`);
+      const editBtn = commentEl.querySelector('.edit-comment-btn');
+      const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+      const saveBtn = commentEl.querySelector('.save-comment-btn');
+      const cancelBtn = commentEl.querySelector('.cancel-comment-btn');
+      
+      const editedText = commentInput.value.trim();
+      
+      if (!editedText) {
+        showToast('Comment cannot be empty', 'red');
+        return;
+      }
+      
+      mealRef.child('comments').child(key).update({ 
+        comment: editedText,
+        edited: true,
+        editTimestamp: new Date().toISOString()
+      })
+        .then(() => {
+          commentText.textContent = editedText;
+          commentText.classList.remove('hidden');
+          commentInput.classList.add('hidden');
+          editBtn.classList.remove('hidden');
+          deleteBtn.classList.remove('hidden');
+          saveBtn.classList.add('hidden');
+          cancelBtn.classList.add('hidden');
           
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const mealNameFromURL = new URLSearchParams(window.location.search).get('meal');
-            const mealRef = db.ref(`foodGroups/${mealNameFromURL}`); // Use the URL name here
-            let mealData = {};
-            let userRating = null;
-            let userId = 'anonymous-user'; // Replace with actual user ID if you have authentication
-          
-            const mealNameEl = document.getElementById('mealName');
-            const descText = document.getElementById('mealDescriptionText');
-            const descInput = document.getElementById('mealDescriptionInput');
-            const saveDescBtn = document.getElementById('saveDescriptionBtn');
-            const editDescBtn = document.getElementById('editDescriptionBtn');
-          
-            const ingredientsList = document.getElementById('ingredientsList');
-            const ingredientsInput = document.getElementById('ingredientsInput');
-            const saveIngredientsBtn = document.getElementById('saveIngredientsBtn');
-            const editIngredientsBtn = document.getElementById('editIngredientsBtn');
-          
-            const methodList = document.getElementById('methodList');
-            const methodInput = document.getElementById('methodInput');
-            const saveMethodBtn = document.getElementById('saveMethodBtn');
-            const editMethodBtn = document.getElementById('editMethodBtn');
-          
-            const starsContainer = document.getElementById('starsContainer');
-            const avgRatingEl = document.getElementById('avgRating');
-            const errorMessage = document.getElementById('errorMessage');
-            const commentInput = document.getElementById('commentInput');
-            const saveCommentBtn = document.getElementById('saveCommentBtn');
-            const commentsList = document.getElementById('commentsList');
-            const toast = document.getElementById('toast');
-          
-            const commentsCache = {}; // Object to store loaded comments with their keys
-            const RATED_KEY_PREFIX = `meal_${mealNameFromURL}_rated`;
-          
-            function checkIfAlreadyRated() {
-                return localStorage.getItem(RATED_KEY_PREFIX) === 'true';
-            }
-          
-            function markAsRated() {
-                localStorage.setItem(RATED_KEY_PREFIX, 'true');
-            }
-          
-            mealRef.once('value', (snapshot) => {
-                mealData = snapshot.val();
-                updateMealPage();
-                displayRatingInfo();
-                loadAndListenForComments();
-            });
-          
-            function updateMealPage() {
-                mealNameEl.textContent = mealNameFromURL || 'Meal Name'; // Use the URL name here
-                descText.textContent = mealData ? mealData.description || '' : '';
-                descInput.value = mealData ? mealData.description || '' : '';
-                ingredientsInput.value = mealData && mealData.ingredients ? mealData.ingredients.join(',') : '';
-                ingredientsList.innerHTML = mealData && mealData.ingredients
-                    ? mealData.ingredients.map(ingredient => `<li>${ingredient.trim()}</li>`).join('')
-                    : '';
-                methodInput.value = mealData && mealData.method ? mealData.method.join(',') : '';
-                methodList.innerHTML = mealData && mealData.method
-                    ? mealData.method.map(step => `<li>${step.trim()}</li>`).join('')
-                    : '';
-                setupRatingStars();
-            }
-          
-            function highlightStars(rating) {
-                document.querySelectorAll('#starsContainer .star').forEach(star => {
-                    const starValue = parseInt(star.dataset.rating);
-                    star.classList.toggle('filled', starValue <= rating);
-                });
-            }
-          
-            function resetStars() {
-                document.querySelectorAll('#starsContainer .star').forEach(star => {
-                    star.classList.remove('filled');
-                    if (userRating && parseInt(userRating) >= parseInt(star.dataset.rating)) {
-                        star.classList.add('filled');
-                    } else if (mealData.ratings && mealData.ratings[userId] && parseInt(mealData.ratings[userId]) >= parseInt(star.dataset.rating)) {
-                        star.classList.add('filled');
-                    }
-                });
-            }
-          
-            function setupRatingStars() {
-                starsContainer.innerHTML = '';
-                for (let i = 1; i <= 5; i++) {
-                    const star = document.createElement('span');
-                    star.className = 'star';
-                    star.textContent = '★';
-                    star.dataset.rating = i;
-                    star.addEventListener('click', handleStarClick);
-                    star.addEventListener('mouseover', () => highlightStars(i));
-                    star.addEventListener('mouseout', resetStars);
-                    starsContainer.appendChild(star);
-                }
-                highlightStars(userRating || (mealData.ratings && mealData.ratings[userId]));
-            }
-          
-            function handleStarClick(event) {
-                if (checkIfAlreadyRated()) {
-                    errorMessage.textContent = "You have already rated this meal.";
-                    setTimeout(() => {
-                        errorMessage.textContent = "";
-                    }, 3000);
-                    return;
-                }
-          
-                const rating = parseInt(event.target.dataset.rating);
-                userRating = rating;
-                db.ref(`foodGroups/${mealNameFromURL}/ratings/${userId}`).set(rating);
-                displayRatingInfo();
-                highlightStars(rating);
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 2000);
-                markAsRated(); // Mark that this device has now rated
-            }
-          
-            function displayRatingInfo() {
-                const ratingsRef = mealRef.child('ratings');
-                ratingsRef.once('value', (snapshot) => {
-                    let totalRating = 0;
-                    let voteCount = 0;
-                    const userRatings = {};
-                    let uniqueVoters = 0;
-          
-                    snapshot.forEach((userSnapshot) => {
-                        const rating = userSnapshot.val();
-                        totalRating += rating;
-                        userRatings[userSnapshot.key] = true;
-                        uniqueVoters++;
-                    });
-          
-                    const averageRating = uniqueVoters > 0 ? (totalRating / uniqueVoters).toFixed(1) : 'Not yet rated';
-                    const hasRatedLocal = checkIfAlreadyRated();
-                    const yourRatingText = hasRatedLocal
-                        ? (userRating || (mealData.ratings && mealData.ratings[userId]) || 'Rated')
-                        : (userRating || (mealData.ratings && mealData.ratings[userId]) || 'Not yet rated');
-          
-                    avgRatingEl.textContent = `Your Rating: ${yourRatingText} (${uniqueVoters} unique voters)`;
-                    highlightStars(userRating || (mealData.ratings && mealData.ratings[userId]));
-                });
-            }
-          
-            function loadAndListenForComments() {
-                commentsList.innerHTML = '';
-                const commentsRef = mealRef.child('comments').orderByChild('timestamp');
-                for (const key in commentsCache) {
-                    delete commentsCache[key];
-                }
-          
-                commentsRef.once('value', (snapshot) => {
-                    snapshot.forEach((childSnapshot) => {
-                        const commentData = childSnapshot.val();
-                        const commentKey = childSnapshot.key;
-                        addCommentToUI(commentData, commentKey);
-                        commentsCache[commentKey] = commentData; // Store in cache
-                    });
-                    startCommentListeners();
-                });
-            }
-          
-            function startCommentListeners() {
-                const commentsRef = mealRef.child('comments');
-          
-                commentsRef.on('child_added', (snapshot) => {
-                    const commentData = snapshot.val();
-                    const commentKey = snapshot.key;
-                    if (!commentsCache[commentKey]) { // Only add if not already in cache (prevent duplicates on initial load)
-                        addCommentToUI(commentData, commentKey);
-                        commentsCache[commentKey] = commentData;
-                    }
-                });
-          
-                commentsRef.on('child_changed', (snapshot) => {
-                    const commentData = snapshot.val();
-                    const commentKey = snapshot.key;
-                    commentsCache[commentKey] = commentData; // Update cache
-                    const commentTextEl = document.getElementById(`commentText-${commentKey}`);
-                    if (commentTextEl) {
-                        commentTextEl.textContent = commentData.comment;
-                    }
-                });
-          
-                commentsRef.on('child_removed', (snapshot) => {
-                    const commentKey = snapshot.key;
-                    delete commentsCache[commentKey]; // Remove from cache
-                    const commentElToRemove = commentsList.querySelector(`.comment[data-key="${commentKey}"]`);
-                    if (commentElToRemove) {
-                        commentElToRemove.remove();
-                    }
-                });
-            }
-          
-            function addCommentToUI(commentData, commentKey) {
-                const commentEl = document.createElement('div');
-                commentEl.classList.add('comment');
-                commentEl.dataset.key = commentKey; // Ensure the key is directly on the comment element
-                commentEl.innerHTML = `
-                  <p id="commentText-${commentKey}">${commentData.comment}</p>
-                  <textarea id="commentInput-${commentKey}" class="textarea hidden">${commentData.comment}</textarea>
-                  <p class="timestamp">${new Date(commentData.timestamp).toLocaleString()}</p>
-                  <div class="comment-actions">
-                    <button class="edit-btn" data-key="${commentKey}">Edit</button>
-                    <button class="delete-btn" data-key="${commentKey}">Delete</button>
-                    <button class="btn hidden save-edit-btn" data-key="${commentKey}">Save</button>
-                  </div>
-                `;
-                commentsList.appendChild(commentEl);
-            }
-          
-            saveCommentBtn.addEventListener('click', () => {
-                console.log("Save comment button clicked!"); // Debug log
-                const newComment = commentInput.value.trim();
-                console.log("Comment text:", newComment); // Debug log
-                if (newComment) {
-                    console.log("Comment is not empty, attempting to save to Firebase..."); // Debug log
-                    const commentRef = mealRef.child('comments').push();
-                    commentRef.set({
-                        comment: newComment,
-                        timestamp: new Date().toISOString()
-                    }).then(() => {
-                        console.log("Comment saved successfully to Firebase."); // Success log
-                        commentInput.value = '';
-                    }).catch((error) => {
-                        console.error("Error saving comment to Firebase:", error); // Error log
-                    });
-                } else {
-                    console.log("Comment is empty, not saving."); // Log for empty comment
-                }
-            });
-          
-            commentsList.addEventListener('click', (event) => {
-                console.log("Clicked element:", event.target);
-                const commentKey = event.target.dataset.key;
-                console.log("Comment key:", commentKey);
-                const target = event.target;
-          
-                if (target.classList.contains('delete-btn')) {
-                    deleteComment(commentKey);
-                } else if (target.classList.contains('edit-btn')) {
-                    enableEditComment(commentKey);
-                } else if (target.classList.contains('save-edit-btn')) {
-                    saveEditedComment(commentKey);
-                }
-            });
-          
-            function deleteComment(commentKey) {
-                mealRef.child('comments').child(commentKey).remove();
-            }
-          
-            function enableEditComment(commentKey) {
-                const commentTextEl = document.getElementById(`commentText-${commentKey}`);
-                const commentInputEl = document.getElementById(`commentInput-${commentKey}`);
-                const editBtn = commentsList.querySelector(`.edit-btn[data-key="${commentKey}"]`);
-                const deleteBtn = commentsList.querySelector(`.delete-btn[data-key="${commentKey}"]`);
-                const saveEditBtn = commentsList.querySelector(`.save-edit-btn[data-key="${commentKey}"]`);
-          
-                if (commentTextEl && commentInputEl && editBtn && deleteBtn && saveEditBtn) {
-                    commentTextEl.classList.add('hidden');
-                    commentInputEl.classList.remove('hidden');
-                    editBtn.classList.add('hidden');
-                    deleteBtn.classList.add('hidden');
-                    saveEditBtn.classList.remove('hidden');
-                }
-            }
-          
-            function saveEditedComment(commentKey) {
-                const commentInputEl = document.getElementById(`commentInput-${commentKey}`);
-                const commentTextEl = document.getElementById(`commentText-${commentKey}`);
-                const editBtn = commentsList.querySelector(`.edit-btn[data-key="${commentKey}"]`);
-                const deleteBtn = commentsList.querySelector(`.delete-btn[data-key="${commentKey}"]`);
-                const saveEditBtn = commentsList.querySelector(`.save-edit-btn[data-key="${commentKey}"]`);
-          
-                if (commentInputEl && commentTextEl && editBtn && deleteBtn && saveEditBtn) {
-                    const editedComment = commentInputEl.value.trim();
-                    if (editedComment) {
-                        mealRef.child('comments').child(commentKey).update({ comment: editedComment });
-                        commentTextEl.textContent = editedComment;
-                        commentTextEl.classList.remove('hidden');
-                        commentInputEl.classList.add('hidden');
-                        editBtn.classList.remove('hidden');
-                        deleteBtn.classList.remove('hidden');
-                        saveEditBtn.classList.add('hidden');
-                    } else {
-                        alert('Comment cannot be empty.');
-                    }
-                }
-            }
-          
-            // EDIT FUNCTIONALITY FOR DESCRIPTION
-            editDescBtn.addEventListener('click', () => toggleDescriptionEdit(true));
-          
-            function toggleDescriptionEdit(showEdit) {
-                console.log("toggleDescriptionEdit called with:", showEdit);
-                descInput.classList.toggle('hidden', !showEdit);
-                saveDescBtn.classList.toggle('hidden', !showEdit);
-                editDescBtn.classList.toggle('hidden', showEdit);
-                descText.classList.toggle('hidden', showEdit);
-            }
-          
-            saveDescBtn.addEventListener('click', () => {
-                mealRef.update({ description: descInput.value });
-                descText.textContent = descInput.value;
-                toggleDescriptionEdit(false);
-            });
-          
-            // EDIT FUNCTIONALITY FOR INGREDIENTS
-            editIngredientsBtn.addEventListener('click', () => toggleIngredientsEdit(true));
-          
-            function toggleIngredientsEdit(showEdit) {
-                console.log("toggleIngredientsEdit called with:", showEdit);
-                ingredientsInput.classList.toggle('hidden', !showEdit);
-                saveIngredientsBtn.classList.toggle('hidden', !showEdit);
-                editIngredientsBtn.classList.toggle('hidden', showEdit);
-                ingredientsList.classList.toggle('hidden', showEdit);
-                if (showEdit) {
-                    ingredientsInput.value = mealData.ingredients ? mealData.ingredients.join(',') : '';
-                }
-            }
-          
-            saveIngredientsBtn.addEventListener('click', () => {
-                const newIngredients = ingredientsInput.value.split(',').map(item => item.trim()).filter(item => item);
-                mealRef.update({ ingredients: newIngredients });
-                ingredientsList.innerHTML = newIngredients.map(ingredient => `<li>${ingredient}</li>`).join('');
-                toggleIngredientsEdit(false);
-            });
-          
-            // EDIT FUNCTIONALITY FOR METHOD
-            editMethodBtn.addEventListener('click', () => toggleMethodEdit(true));
-          
-            function toggleMethodEdit(showEdit) {
-                console.log("toggleMethodEdit called with:", showEdit);
-                methodInput.classList.toggle('hidden', !showEdit);
-                saveMethodBtn.classList.toggle('hidden', !showEdit);
-                editMethodBtn.classList.toggle('hidden', showEdit);
-                methodList.classList.toggle('hidden', showEdit);
-                if (showEdit) {
-                    methodInput.value = mealData.method ? mealData.method.join(',') : '';
-                }
-            }
-          
-            saveMethodBtn.addEventListener('click', () => {
-                const newMethod = methodInput.value.split(',').map(item => item.trim()).filter(item => item);
-                mealRef.update({ method: newMethod });
-                methodList.innerHTML = newMethod.map((step, index) => `<li>${step}</li>`).join('');
-                toggleMethodEdit(false);
-            });
-          
-            window.addEventListener('load', () => {
-                if (checkIfAlreadyRated()) {
-                    // If already rated, try to show the user's existing rating if available
-                    const storedRating = mealData.ratings && mealData.ratings[userId];
-                    if (storedRating) {
-                        highlightStars(storedRating);
-                    } else {
-                        // If rated but no user-specific rating found (e.g., anonymous user),
-                        // just show the filled stars based on a general "rated" state.
-                        highlightStars(0); // Or some other visual indication
-                    }
-                }
-            });
-          </script>
-        </body>
-        </html>
+          showToast('Comment updated!');
+        })
+        .catch(error => {
+          showToast('Error updating comment: ' + error.message, 'red');
+        });
+    }
+    
+    // Cancel comment edit
+    function cancelEditComment(key) {
+      const commentEl = document.querySelector(`[data-key="${key}"]`);
+      const commentText = commentEl.querySelector(`#commentText-${key}`);
+      const commentInput = commentEl.querySelector(`#commentInput-${key}`);
+      const editBtn = commentEl.querySelector('.edit-comment-btn');
+      const deleteBtn = commentEl.querySelector('.delete-comment-btn');
+      const saveBtn = commentEl.querySelector('.save-comment-btn');
+      const cancelBtn = commentEl.querySelector('.cancel-comment-btn');
+      
+      commentText.classList.remove('hidden');
+      commentInput.classList.add('hidden');
+      editBtn.classList.remove('hidden');
+      deleteBtn.classList.remove('hidden');
+      saveBtn.classList.add('hidden');
+      cancelBtn.classList.add('hidden');
+    }
+    
+    // Delete comment
+    function deleteComment(key) {
+      if (confirm('Are you sure you want to delete this comment?')) {
+        mealRef.child('comments').child(key).remove()
+          .then(() => {
+            showToast('Comment deleted');
+          })
+          .catch(error => {
+            showToast('Error deleting comment: ' + error.message, 'red');
+          });
+      }
+    }
+    
+    // Open cook mode
+    function openCookMode() {
+      if (!mealData.method || mealData.method.length === 0) {
+        showToast('This meal has no cooking instructions', 'red');
+        return;
+      }
+      
+      currentStep = 0;
+      totalSteps = mealData.method.length;
+      updateCookModeDisplay();
+      
+      // Start voice recognition
+      startVoiceRecognition();
+      
+      // Speak the first step
+      speakCurrentStep();
+      
+      // Show cook mode
+      cookMode.classList.add('active');
+      
+      // Keep screen awake
+      if ('wakeLock' in navigator) {
+        try {
+          navigator.wakeLock.request('screen');
+        } catch (err) {
+          console.log('Screen wake lock error:', err);
+        }
+      }
+    }
+    
+    // Close cook mode
+    function closeCookMode() {
+      cookMode.classList.remove('active');
+      stopVoiceRecognition();
+      stopTimer();
+      
+      // Release wake lock
+      if ('wakeLock' in navigator && wakeLock !== null) {
+        wakeLock.release().then(() => {
+          wakeLock = null;
+        });
+      }
+    }
+    
+    // Update cook mode display
+    function updateCookModeDisplay() {
+      cookStepText.textContent = mealData.method[currentStep];
+      cookProgress.textContent = `Step ${currentStep + 1}/${totalSteps}`;
+      
+      // Check for timer in the step
+      checkForTimer(mealData.method[currentStep]);
+      
+      // Update button states
+      prevStepBtn.disabled = currentStep === 0;
+      nextStepBtn.disabled = currentStep === totalSteps - 1;
+      
+      // If this is the last step, change "Next" to "Finish"
+      if (currentStep === totalSteps - 1) {
+        nextStepBtn.textContent = 'Finish';
+        nextStepBtn.addEventListener('click', closeCookMode, { once: true });
+      } else {
+        nextStepBtn.textContent = 'Next';
+        nextStepBtn.removeEventListener('click', closeCookMode);
+      }
+    }
+    
+    // Check for timer in step text
+    function checkForTimer(stepText) {
+      // Look for time patterns like "20 minutes", "1 hour", "5 min", etc.
+      const timePatterns = [
+        { regex: /(\d+)\s*minutes?/, multiplier: 60 },
+        { regex: /(\d+)\s*mins?/, multiplier: 60 },
+        { regex: /(\d+)\s*hours?/, multiplier: 3600 },
+        { regex: /(\d+)\s*hrs?/, multiplier: 3600 }
+      ];
+      
+      let timerSeconds = 0;
+      
+      for (const pattern of timePatterns) {
+        const match = stepText.match(pattern.regex);
+        if (match) {
+          timerSeconds = parseInt(match[1]) * pattern.multiplier;
+          break;
+        }
+      }
+      
+      if (timerSeconds > 0) {
+        // Show timer suggestion
+        const minutes = Math.floor(timerSeconds / 60);
+        const seconds = timerSeconds % 60;
+        cookTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        cookTimer.classList.remove('hidden');
+      } else {
+        cookTimer.classList.add('hidden');
+      }
+    }
+    
+    // Start timer
+    function startTimer(minutes) {
+      stopTimer(); // Stop any existing timer
+      
+      const seconds = minutes * 60;
+      timerEnd = new Date(Date.now() + seconds * 1000);
+      
+      cookTimer.textContent = `${minutes.toString().padStart(2, '0')}:00`;
+      cookTimer.classList.remove('hidden');
+      
+      activeTimer = setInterval(updateTimer, 1000);
+      showToast(`Timer set for ${minutes} minutes`);
+    }
+    
+    // Update timer display
+    function updateTimer() {
+      const now = new Date();
+      const remaining = Math.max(0, Math.floor((timerEnd - now) / 1000));
+      
+      if (remaining <= 0) {
+        stopTimer();
+        cookTimer.textContent = "00:00";
+        showToast("Timer finished!");
+        return;
+      }
+      
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
+      cookTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Stop timer
+    function stopTimer() {
+      if (activeTimer) {
+        clearInterval(activeTimer);
+        activeTimer = null;
+        cookTimer.classList.add('hidden');
+      }
+    }
+    
+    // Go to previous step
+    function goToPrevStep() {
+      if (currentStep > 0) {
+        currentStep--;
+        updateCookModeDisplay();
+        speakCurrentStep();
+      }
+    }
+    
+    // Go to next step
+    function goToNextStep() {
+      if (currentStep < totalSteps - 1) {
+        currentStep++;
+        updateCookModeDisplay();
+        speakCurrentStep();
+      } else {
+        // Last step - exit cook mode
+        closeCookMode();
+      }
+    }
+    
+    // Speak current step using speech synthesis
+    function speakCurrentStep() {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance();
+        utterance.text = `Step ${currentStep + 1} of ${totalSteps}. ${mealData.method[currentStep]}`;
+        speechSynthesis.speak(utterance);
+      }
+    }
+    
+    // Open comments section
+    function openCommentsSection() {
+      commentsSection.classList.add('active');
+    }
+    
+    // Close comments section
+    function closeCommentsSection() {
+      commentsSection.classList.remove('active');
+    }
+    
+    // Show toast notification
+    function showToast(message, color = 'green') {
+      toastMessage.textContent = message;
+      
+      // Reset classes
+      toast.className = 'fixed bottom-20 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg flex items-center z-50';
+      
+      // Add color class
+      if (color === 'green') {
+        toast.classList.add('bg-green-500');
+      } else if (color === 'red') {
+        toast.classList.add('bg-red-500');
+      }
+      
+      // Show toast
+      toast.classList.add('show');
+      
+      // Hide after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
