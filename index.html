@@ -582,7 +582,7 @@ function signInWithGoogle() {
   auth.signInWithPopup(googleProvider)
     .then(result => {
       // The signed-in user info is in result.user
-      checkUser Group(result.user.uid).then(groupExists => {
+      checkUser Group(result.user.uid).then(groupExists => { // Ensure the function name is correct
         if (!groupExists) {
           showGroupSetup(result.user);
         } else {
@@ -596,6 +596,7 @@ function signInWithGoogle() {
       showToast(error.message, "red");
     });
 }
+
 
 
 // Join or create a group
