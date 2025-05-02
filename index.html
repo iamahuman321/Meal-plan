@@ -577,13 +577,18 @@
       document.getElementById("confirmDeleteBtn").addEventListener("click", deleteDish);
     }
 
-    // Sign in with Google
-    function signInWithGoogle() {
-      auth.signInWithPopup(googleProvider)
-        .then(result => {
-          // The signed-in user info is in      checkUserGroup(result.user.uid).then(groupExists => {
+// Sign in with Google
+function signInWithGoogle() {
+  auth.signInWithPopup(googleProvider)
+    .then(result => {
+      // The signed-in user info is in result.user
+      checkUser Group(result.user.uid).then(groupExists => {
         if (!groupExists) {
           showGroupSetup(result.user);
+        } else {
+          // If the user is in a group, you can proceed with your app logic here
+          setupUser UI(result.user);
+          loadGroupData();
         }
       });
     })
@@ -591,6 +596,7 @@
       showToast(error.message, "red");
     });
 }
+
 
 // Join or create a group
 function joinOrCreateGroup() {
