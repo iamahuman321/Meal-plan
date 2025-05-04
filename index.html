@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Group Meal Planner</title>
+  <meta name="theme-color" content="#0f172a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <title>Meal Planner</title>
+  <link rel="manifest" href="/manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -26,6 +30,7 @@
       font-family: 'Poppins', sans-serif;
       background-color: var(--darker);
       color: var(--light);
+      -webkit-tap-highlight-color: transparent;
     }
     
     .meal-card {
@@ -44,14 +49,6 @@
     
     .switch-btn:hover {
       transform: scale(1.05);
-    }
-    
-    .dish-card {
-      transition: all 0.2s ease;
-    }
-    
-    .dish-card:hover {
-      transform: translateY(-3px);
     }
     
     .fade-in {
@@ -94,7 +91,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(0,0,0,0.8);
+      background-color: rgba(0,0,0,0.9);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -110,25 +107,65 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
 
+    /* App-like bottom navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--dark);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem 0;
+      z-index: 50;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.5rem;
+      color: #64748b;
+      text-decoration: none;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+
     /* Mobile optimizations */
     @media (max-width: 640px) {
       .meal-card {
         margin-bottom: 1rem;
       }
-      .dish-card {
-        margin-bottom: 0.5rem;
-      }
       #daysInput {
         width: 60px;
+      }
+      main {
+        padding-bottom: 80px;
+      }
+    }
+
+    @media (min-width: 641px) {
+      .bottom-nav {
+        display: none;
       }
     }
   </style>
 </head>
-<body class="min-h-screen pb-20">
+<body class="min-h-screen">
   <!-- Auth Modal -->
   <div id="authModal" class="auth-modal">
     <div class="auth-container">
-      <h2 class="text-2xl font-bold text-green-400 mb-6 text-center">Welcome to Group Meal Planner</h2>
+      <h2 class="text-2xl font-bold text-green-400 mb-6 text-center">Welcome to Meal Planner</h2>
       <div id="loginSection">
         <button id="googleSignInBtn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg flex items-center justify-center transition-all mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -141,20 +178,16 @@
         </button>
       </div>
       <div id="groupSetupSection" class="hidden">
-        <h3 class="text-xl font-semibold text-green-300 mb-4">Join or Create a Group</h3>
-        <div class="mb-4">
-          <label for="userNameInput" class="block text-sm font-medium text-gray-300 mb-1">Your Name</label>
-          <input id="userNameInput" type="text" placeholder="Enter your name" 
-                 class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-        </div>
+        <h3 class="text-xl font-semibold text-green-300 mb-4">Join or Create Group</h3>
         <div class="mb-4">
           <label for="groupNameInput" class="block text-sm font-medium text-gray-300 mb-1">Group Name</label>
           <input id="groupNameInput" type="text" placeholder="Enter group name" 
                  class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
         </div>
-        <button id="joinGroupBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+        <button id="joinGroupBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors mb-2">
           Join Group
         </button>
+        <p class="text-gray-400 text-sm text-center">All members in the same group share the same meal plan</p>
       </div>
     </div>
   </div>
@@ -163,21 +196,14 @@
   <header class="bg-gradient-to-r from-green-600 to-blue-600 p-4 shadow-lg sticky top-0 z-10">
     <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-2xl md:text-3xl font-bold text-white flex items-center">
-        <span class="mr-2">🌱</span> Group Meal Planner
+        <span class="mr-2">🌱</span> <span id="groupNameDisplay">Meal Planner</span>
       </h1>
       <div class="flex items-center">
         <div id="userProfile" class="hidden flex items-center mr-4">
-          <span id="userNameDisplay" class="text-white mr-2"></span>
           <img id="userPhoto" class="w-8 h-8 rounded-full" src="" alt="Profile">
-          <span id="groupNameDisplay" class="text-white ml-3 bg-blue-500 px-2 py-1 rounded-lg text-sm"></span>
         </div>
         <button id="signOutBtn" class="hidden bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm">
           Sign Out
-        </button>
-        <button id="menuBtn" class="md:hidden text-white ml-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
         </button>
       </div>
     </div>
@@ -185,12 +211,6 @@
 
   <!-- Main Content -->
   <main class="container mx-auto px-4 py-6">
-    <!-- Group Members -->
-    <div id="groupMembersSection" class="bg-gray-800 rounded-xl shadow-2xl p-4 mb-6 hidden">
-      <h2 class="text-xl font-bold text-green-400 mb-2">Group Members</h2>
-      <div id="groupMembersList" class="flex flex-wrap gap-2"></div>
-    </div>
-
     <!-- Meal Generator Section -->
     <section class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -203,17 +223,17 @@
       </div>
       
       <div class="flex flex-wrap gap-4 justify-center mb-6">
-        <button id="selectButton" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
+        <button id="generatePlanBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
           </svg>
           Generate Plan
         </button>
-        <button id="resetButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
+        <button id="resetPlanBtn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-full flex items-center transition-all">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
           </svg>
-          Reset
+          Reset Plan
         </button>
       </div>
 
@@ -223,177 +243,50 @@
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
       </div>
       
-      <div id="result" class="space-y-4"></div>
+      <div id="mealPlanContainer" class="space-y-4"></div>
     </section>
 
-    <!-- Action Buttons (Export/Share) -->
+    <!-- Action Buttons -->
     <div id="actionButtons" class="hidden flex flex-wrap justify-center gap-4 mb-8">
-      <button onclick="exportPDF()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+      <button id="exportPdfBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
         Export PDF
       </button>
-      <button onclick="sharePlan()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+      <button id="sharePlanBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
         </svg>
         Share Plan
       </button>
-      <button onclick="showGroceryModal()" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
+      <a href="grocery.html" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full flex items-center transition-all">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
         </svg>
         Grocery List
-      </button>
+      </a>
     </div>
-
-    <!-- Dish Management Section -->
-    <section class="bg-gray-800 rounded-xl shadow-2xl p-6">
-      <h2 class="text-2xl font-bold text-yellow-300 mb-6">Manage Group Dishes</h2>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Dish List -->
-        <div class="lg:col-span-2">
-          <div class="flex flex-wrap gap-2 mb-4">
-            <button class="group-tab bg-gray-700 hover:bg-green-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Healthy Home-style Meals">
-              Healthy
-            </button>
-            <button class="group-tab bg-gray-700 hover:bg-red-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Junk Food">
-              Junk
-            </button>
-            <button class="group-tab bg-gray-700 hover:bg-pink-600 px-4 py-2 rounded-lg font-semibold transition-colors" data-group="Dessert">
-              Dessert
-            </button>
-          </div>
-
-          <div class="relative mb-4">
-            <input type="text" id="searchInput" placeholder="Search dishes..." 
-                   class="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-            <div class="absolute left-3 top-2.5 text-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </div>
-
-          <div id="dishContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto p-2"></div>
-        </div>
-
-        <!-- Add Dish Form -->
-        <div>
-          <div class="bg-gray-700 p-4 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold text-green-300 mb-4">Add New Dish</h3>
-            <div class="space-y-4">
-              <div>
-                <label for="newDishName" class="block text-sm font-medium text-gray-300 mb-1">Dish Name</label>
-                <input id="newDishName" type="text" placeholder="Enter dish name" 
-                       class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-              </div>
-              <div>
-                <label for="newDishGroup" class="block text-sm font-medium text-gray-300 mb-1">Category</label>
-                <select id="newDishGroup" class="w-full px-4 py-2 bg-gray-600 border border-gray-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="Healthy Home-style Meals">Healthy</option>
-                  <option value="Junk Food">Junk Food</option>
-                  <option value="Dessert">Dessert</option>
-                </select>
-              </div>
-              <button id="addDishBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                Add Dish
-              </button>
-            </div>
-          </div>
-
-          <!-- Quick Stats -->
-          <div class="mt-6 bg-gray-700 p-4 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold text-green-300 mb-4">Group Dish Stats</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-800 p-3 rounded-lg text-center">
-                <div class="text-2xl font-bold text-green-400" id="healthyCount">0</div>
-                <div class="text-sm text-gray-300">Healthy</div>
-              </div>
-              <div class="bg-gray-800 p-3 rounded-lg text-center">
-                <div class="text-2xl font-bold text-red-400" id="junkCount">0</div>
-                <div class="text-sm text-gray-300">Junk</div>
-              </div>
-              <div class="bg-gray-800 p-3 rounded-lg text-center">
-                <div class="text-2xl font-bold text-pink-400" id="dessertCount">0</div>
-                <div class="text-sm text-gray-300">Dessert</div>
-              </div>
-              <div class="bg-gray-800 p-3 rounded-lg text-center">
-                <div class="text-2xl font-bold text-blue-400" id="totalCount">0</div>
-                <div class="text-sm text-gray-300">Total</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- Grocery List Modal -->
-  <div id="groceryModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-      <div class="flex justify-between items-center p-4 border-b border-gray-700">
-        <h3 class="text-xl font-bold text-green-400">🛒 Your Grocery List</h3>
-        <button onclick="closeGroceryModal()" class="text-gray-400 hover:text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <div class="p-4 overflow-y-auto max-h-[70vh]">
-        <div id="groceryListContent"></div>
-      </div>
-      <div class="p-4 border-t border-gray-700 flex justify-end gap-2">
-        <button onclick="printGroceryList()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-          Print
-        </button>
-        <button onclick="exportGroceryPDF()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-          Export PDF
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Dish Modal -->
-  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md">
-      <div class="p-4 border-b border-gray-700">
-        <h3 class="text-xl font-bold text-green-400">Edit Dish</h3>
-      </div>
-      <div class="p-4">
-        <input id="editDishName" type="text" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white mb-4 focus:outline-none focus:ring-2 focus:ring-green-500">
-        <div class="flex justify-end gap-2">
-          <button id="saveEditBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-            Save
-          </button>
-          <button id="closeEditBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delete Confirmation Modal -->
-  <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md">
-      <div class="p-4 border-b border-gray-700">
-        <h3 class="text-xl font-bold text-red-400">Confirm Delete</h3>
-      </div>
-      <div class="p-4">
-        <p class="text-gray-300 mb-4">Are you sure you want to delete this dish? This action cannot be undone.</p>
-        <div class="flex justify-end gap-2">
-          <button id="confirmDeleteBtn" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
-            Delete
-          </button>
-          <button id="closeDeleteBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <span class="nav-icon">🍽️</span>
+      <span>Meals</span>
+    </a>
+    <a href="dishes.html" class="nav-item">
+      <span class="nav-icon">📋</span>
+      <span>Dishes</span>
+    </a>
+    <a href="grocery.html" class="nav-item">
+      <span class="nav-icon">🛒</span>
+      <span>Grocery</span>
+    </a>
+    <a href="settings.html" class="nav-item">
+      <span class="nav-icon">⚙️</span>
+      <span>Settings</span>
+    </a>
   </div>
 
   <!-- Toast Notification -->
@@ -405,20 +298,6 @@
       <span id="toastMessage">Operation successful!</span>
     </div>
   </div>
-
-  <!-- Service Worker Registration -->
-  <script>
-    // Register service worker for offline support
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(registration => {
-          console.log('ServiceWorker registration successful');
-        }).catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
-        });
-      });
-    }
-  </script>
 
   <script>
     // Firebase Configuration
@@ -441,34 +320,15 @@
 
     // Global Variables
     let foodGroups = {};
-    let currentGroup = "Healthy Home-style Meals";
-    let selectedDish = "";
     let currentPlan = [];
-    let currentUserGroup = "";
-    let ingredientMap = {
-      // Healthy Meals
-      "Grilled Chicken": ["Chicken breast", "Olive oil", "Lemon", "Garlic", "Salt", "Pepper"],
-      "Vegetable Stir Fry": ["Broccoli", "Carrots", "Bell peppers", "Soy sauce", "Ginger", "Garlic", "Sesame oil"],
-      "Salmon with Asparagus": ["Salmon fillet", "Asparagus", "Lemon", "Butter", "Dill", "Salt", "Pepper"],
-      "Quinoa Salad": ["Quinoa", "Cucumber", "Tomato", "Red onion", "Feta cheese", "Olive oil", "Lemon juice"],
-      
-      // Junk Food
-      "Cheeseburger": ["Beef patty", "Cheese", "Burger bun", "Lettuce", "Tomato", "Onion", "Ketchup", "Mustard"],
-      "Pizza": ["Pizza dough", "Tomato sauce", "Mozzarella cheese", "Pepperoni", "Mushrooms", "Bell peppers"],
-      "Fried Chicken": ["Chicken pieces", "Flour", "Eggs", "Breadcrumbs", "Oil for frying", "Salt", "Pepper"],
-      
-      // Desserts
-      "Chocolate Cake": ["Flour", "Sugar", "Cocoa powder", "Eggs", "Butter", "Milk", "Baking powder"],
-      "Apple Pie": ["Apples", "Pie crust", "Sugar", "Cinnamon", "Butter", "Lemon juice"],
-      "Ice Cream Sundae": ["Vanilla ice cream", "Chocolate syrup", "Whipped cream", "Cherries", "Nuts"]
-    };
+    let currentGroupName = "";
+    let currentUserId = "";
 
     // DOM Elements
     const daysLeftDisplay = document.getElementById("daysLeft");
-    const resultEl = document.getElementById("result");
+    const mealPlanContainer = document.getElementById("mealPlanContainer");
     const actionButtons = document.getElementById("actionButtons");
     const loadingSpinner = document.getElementById("loadingSpinner");
-    const dishContainer = document.getElementById("dishContainer");
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toastMessage");
     const authModal = document.getElementById("authModal");
@@ -476,15 +336,15 @@
     const groupSetupSection = document.getElementById("groupSetupSection");
     const googleSignInBtn = document.getElementById("googleSignInBtn");
     const joinGroupBtn = document.getElementById("joinGroupBtn");
-    const userNameInput = document.getElementById("userNameInput");
     const groupNameInput = document.getElementById("groupNameInput");
     const userProfile = document.getElementById("userProfile");
-    const userNameDisplay = document.getElementById("userNameDisplay");
-    const groupNameDisplay = document.getElementById("groupNameDisplay");
     const userPhoto = document.getElementById("userPhoto");
     const signOutBtn = document.getElementById("signOutBtn");
-    const groupMembersSection = document.getElementById("groupMembersSection");
-    const groupMembersList = document.getElementById("groupMembersList");
+    const groupNameDisplay = document.getElementById("groupNameDisplay");
+    const generatePlanBtn = document.getElementById("generatePlanBtn");
+    const resetPlanBtn = document.getElementById("resetPlanBtn");
+    const exportPdfBtn = document.getElementById("exportPdfBtn");
+    const sharePlanBtn = document.getElementById("sharePlanBtn");
 
     // Initialize the app
     document.addEventListener('DOMContentLoaded', () => {
@@ -496,21 +356,17 @@
     function checkAuthState() {
       auth.onAuthStateChanged(user => {
         if (user) {
-          // User is signed in
-          checkUserGroup(user.uid).then(group => {
-            if (group) {
-              // User is in a group, proceed to app
-              currentUserGroup = group;
+          currentUserId = user.uid;
+          checkUserGroup(user.uid).then(groupName => {
+            if (groupName) {
+              currentGroupName = groupName;
               setupUserUI(user);
-              loadFoodGroups();
-              loadGroupMembers();
+              loadGroupData();
             } else {
-              // User is not in a group, show setup
               showGroupSetup(user);
             }
           });
         } else {
-          // No user is signed in
           showAuthModal();
         }
       });
@@ -536,53 +392,62 @@
       loginSection.classList.add('hidden');
       groupSetupSection.classList.remove('hidden');
       
-      // Pre-fill name if available from Google
-      if (user.displayName) {
-        userNameInput.value = user.displayName;
+      if (user.photoURL) {
+        userPhoto.src = user.photoURL;
       }
     }
 
-    // Setup user UI after authentication
+    // Setup user UI after joining a group
     function setupUserUI(user) {
       authModal.classList.add('hidden');
       userProfile.classList.remove('hidden');
       signOutBtn.classList.remove('hidden');
-      groupMembersSection.classList.remove('hidden');
+      groupNameDisplay.textContent = currentGroupName;
       
-      // Set user display info
-      db.ref(`users/${user.uid}`).once('value').then(snapshot => {
-        const userData = snapshot.val();
-        if (userData) {
-          userNameDisplay.textContent = userData.name;
-          groupNameDisplay.textContent = userData.group;
-          if (user.photoURL) {
-            userPhoto.src = user.photoURL;
-          }
-        }
-      });
+      if (user.photoURL) {
+        userPhoto.src = user.photoURL;
+      }
     }
 
-    // Load group members
-    function loadGroupMembers() {
-      db.ref('groups').child(currentUserGroup).child('members').on('value', snapshot => {
-        const members = snapshot.val() || {};
-        groupMembersList.innerHTML = '';
+    // Load group data
+    function loadGroupData() {
+      if (!currentGroupName) return;
+      
+      const foodRef = db.ref(`groups/${currentGroupName}/foodGroups`);
+      const currentMealPlanRef = db.ref(`groups/${currentGroupName}/mealPlan/current`);
+      const mealPlanMetadataRef = db.ref(`groups/${currentGroupName}/mealPlan/metadata`);
+      
+      foodRef.on("value", (snapshot) => {
+        foodGroups = snapshot.val() || {};
+      });
+      
+      loadMealPlan();
+    }
+
+    // Load saved meal plan
+    function loadMealPlan() {
+      const currentMealPlanRef = db.ref(`groups/${currentGroupName}/mealPlan/current`);
+      const mealPlanMetadataRef = db.ref(`groups/${currentGroupName}/mealPlan/metadata`);
+      
+      mealPlanMetadataRef.once('value', metaSnap => {
+        const metadata = metaSnap.val();
+        if (!metadata) return;
         
-        for (const userId in members) {
-          db.ref(`users/${userId}`).once('value').then(userSnapshot => {
-            const user = userSnapshot.val();
-            if (user) {
-              const memberEl = document.createElement('div');
-              memberEl.className = 'flex items-center bg-gray-700 px-3 py-2 rounded-lg';
-              memberEl.innerHTML = `
-                <img src="${user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" 
-                     class="w-8 h-8 rounded-full mr-2">
-                <span>${user.name}</span>
-              `;
-              groupMembersList.appendChild(memberEl);
-            }
-          });
-        }
+        currentMealPlanRef.once('value', planSnap => {
+          const saved = planSnap.val();
+          if (saved && saved.html && saved.data) {
+            mealPlanContainer.innerHTML = saved.html;
+            currentPlan = saved.data;
+            actionButtons.classList.remove("hidden");
+            
+            const expiryDate = new Date(metadata.generationDate);
+            expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
+            const today = new Date();
+            const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
+            
+            daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
+          }
+        });
       });
     }
 
@@ -594,39 +459,21 @@
       signOutBtn.addEventListener('click', signOut);
       
       // Meal Planner
-      document.getElementById("selectButton").addEventListener("click", generateMealPlan);
-      document.getElementById("resetButton").addEventListener("click", clearMealPlan);
-      
-      // Dish Management
-      document.querySelectorAll(".group-tab").forEach(button => {
-        button.addEventListener("click", () => {
-          currentGroup = button.getAttribute("data-group");
-          renderDishes(true);
-          updateActiveTab();
-        });
-      });
-      
-      document.getElementById("searchInput").addEventListener("input", () => renderDishes(true));
-      document.getElementById("addDishBtn").addEventListener("click", addDish);
-      
-      // Modals
-      document.getElementById("closeEditBtn").addEventListener("click", closeEditModal);
-      document.getElementById("saveEditBtn").addEventListener("click", saveEditedDish);
-      document.getElementById("closeDeleteBtn").addEventListener("click", closeDeleteModal);
-      document.getElementById("confirmDeleteBtn").addEventListener("click", deleteDish);
+      generatePlanBtn.addEventListener('click', generateMealPlan);
+      resetPlanBtn.addEventListener('click', clearMealPlan);
+      exportPdfBtn.addEventListener('click', exportPDF);
+      sharePlanBtn.addEventListener('click', sharePlan);
     }
 
     // Sign in with Google
     function signInWithGoogle() {
       auth.signInWithPopup(googleProvider)
         .then(result => {
-          // The signed-in user info is in result.user
-          checkUserGroup(result.user.uid).then(group => {
-            if (group) {
-              currentUserGroup = group;
+          checkUserGroup(result.user.uid).then(groupName => {
+            if (groupName) {
+              currentGroupName = groupName;
               setupUserUI(result.user);
-              loadFoodGroups();
-              loadGroupMembers();
+              loadGroupData();
             } else {
               showGroupSetup(result.user);
             }
@@ -639,64 +486,49 @@
 
     // Join or create a group
     function joinGroup() {
-      const userName = userNameInput.value.trim();
       const groupName = groupNameInput.value.trim();
       const user = auth.currentUser;
-      
-      if (!userName) {
-        showToast("Please enter your name", "red");
-        return;
-      }
       
       if (!groupName) {
         showToast("Please enter a group name", "red");
         return;
       }
       
-      // Save user profile and group info
-      const userRef = db.ref(`users/${user.uid}`);
-      const groupRef = db.ref(`groups/${groupName}`);
+      if (!user) {
+        showToast("Not authenticated", "red");
+        return;
+      }
       
-      // First check if group exists
-      groupRef.once('value').then(snapshot => {
+      db.ref(`groups/${groupName}`).once('value').then(snapshot => {
         const groupExists = snapshot.exists();
+        const updates = {};
         
-        // Transaction to ensure atomic updates
-        userRef.transaction(currentData => {
-          if (currentData === null) {
-            return {
-              name: userName,
-              email: user.email,
-              photoURL: user.photoURL || "",
-              group: groupName
-            };
-          }
-          currentData.group = groupName;
-          return currentData;
-        }).then(() => {
-          // Add user to group members
-          return groupRef.child('members').child(user.uid).set(true);
-        }).then(() => {
-          // If group didn't exist, initialize it
-          if (!groupExists) {
-            return groupRef.set({
-              name: groupName,
-              createdAt: firebase.database.ServerValue.TIMESTAMP,
-              createdBy: user.uid,
-              members: {
-                [user.uid]: true
-              }
-            });
-          }
-        }).then(() => {
-          currentUserGroup = groupName;
-          setupUserUI(user);
-          loadFoodGroups();
-          loadGroupMembers();
-          showToast(`Joined group "${groupName}" successfully!`);
-        }).catch(error => {
-          showToast("Error joining group: " + error.message, "red");
-        });
+        updates[`groups/${groupName}/members/${user.uid}`] = {
+          name: user.displayName || "User",
+          photoURL: user.photoURL || "",
+          joinedAt: new Date().toISOString()
+        };
+        
+        updates[`users/${user.uid}/group`] = groupName;
+        
+        if (!groupExists) {
+          updates[`groups/${groupName}/foodGroups`] = {
+            "Healthy Home-style Meals": ["Grilled Chicken", "Vegetable Stir Fry", "Salmon with Asparagus", "Quinoa Salad"],
+            "Junk Food": ["Cheeseburger", "Pizza", "Fried Chicken"],
+            "Dessert": ["Chocolate Cake", "Apple Pie", "Ice Cream Sundae"]
+          };
+        }
+        
+        db.ref().update(updates)
+          .then(() => {
+            currentGroupName = groupName;
+            setupUserUI(user);
+            loadGroupData();
+            showToast(`Joined ${groupName} group`);
+          })
+          .catch(error => {
+            showToast("Error joining group: " + error.message, "red");
+          });
       });
     }
 
@@ -705,37 +537,8 @@
       auth.signOut().then(() => {
         userProfile.classList.add('hidden');
         signOutBtn.classList.add('hidden');
-        groupMembersSection.classList.add('hidden');
+        groupNameDisplay.textContent = "Meal Planner";
         showAuthModal();
-      });
-    }
-
-    // Update active tab styling
-    function updateActiveTab() {
-      document.querySelectorAll(".group-tab").forEach(tab => {
-        if (tab.getAttribute("data-group") === currentGroup) {
-          tab.classList.add("bg-green-600", "text-white");
-          tab.classList.remove("bg-gray-700");
-        } else {
-          tab.classList.remove("bg-green-600", "text-white");
-          tab.classList.add("bg-gray-700");
-        }
-      });
-    }
-
-    // Load food groups from Firebase
-    function loadFoodGroups() {
-      if (!currentUserGroup) return;
-      
-      const foodRef = db.ref(`groups/${currentUserGroup}/foodGroups`);
-      const currentMealPlanRef = db.ref(`groups/${currentUserGroup}/mealPlan/current`);
-      const mealPlanMetadataRef = db.ref(`groups/${currentUserGroup}/mealPlan/metadata`);
-      
-      foodRef.on("value", (snapshot) => {
-        foodGroups = snapshot.val() || {};
-        renderDishes(true);
-        updateDishStats();
-        loadMealPlan();
       });
     }
 
@@ -743,7 +546,7 @@
     function generateMealPlan() {
       const numDays = parseInt(document.getElementById("daysInput").value) || 7;
       loadingSpinner.classList.remove("hidden");
-      resultEl.innerHTML = "";
+      mealPlanContainer.innerHTML = "";
       actionButtons.classList.add("hidden");
       
       setTimeout(() => {
@@ -806,21 +609,22 @@
               </div>
             ` : ''}
             
-            <button onclick="viewMealDetails('${d.item.replace(/'/g, "\\'")}')" class="mt-3 text-blue-400 hover:text-blue-300 text-sm flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-              </svg>
-              View Details
-            </button>
+            <div class="mt-3 flex gap-2">
+              <button onclick="window.location.href='detail.html?meal=${encodeURIComponent(d.item)}'" class="text-blue-400 hover:text-blue-300 text-sm flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                </svg>
+                Details
+              </button>
+            </div>
           </div>
         `;
       });
       
       html += `</div>`;
-      resultEl.innerHTML = html;
+      mealPlanContainer.innerHTML = html;
       
-      // Save to Firebase
       saveCurrentMealPlan(html, parseInt(document.getElementById("daysInput").value) || 7, currentPlan);
       daysLeftDisplay.textContent = `Plan Duration: ${parseInt(document.getElementById("daysInput").value) || 7} days`;
     }
@@ -859,357 +663,30 @@
       showToast("Dessert swapped successfully!");
     }
 
-    // View meal details
-    function viewMealDetails(mealName) {
-      window.location.href = `detail.html?meal=${encodeURIComponent(mealName)}&group=${encodeURIComponent(currentUserGroup)}`;
-    }
-
     // Clear meal plan
     function clearMealPlan() {
-      if (!currentUserGroup) return;
+      const currentMealPlanRef = db.ref(`groups/${currentGroupName}/mealPlan/current`);
+      const mealPlanMetadataRef = db.ref(`groups/${currentGroupName}/mealPlan/metadata`);
       
-      db.ref(`groups/${currentUserGroup}/mealPlan`).remove();
-      resultEl.innerHTML = "";
+      currentMealPlanRef.remove();
+      mealPlanMetadataRef.remove();
+      mealPlanContainer.innerHTML = "";
       daysLeftDisplay.textContent = "";
       actionButtons.classList.add("hidden");
       showToast("Meal plan cleared");
     }
 
-    // Load saved meal plan
-    function loadMealPlan() {
-      if (!currentUserGroup) return;
-      
-      db.ref(`groups/${currentUserGroup}/mealPlan/metadata`).once('value', metaSnap => {
-        const metadata = metaSnap.val();
-        if (!metadata) return;
-        
-        db.ref(`groups/${currentUserGroup}/mealPlan/current`).once('value', planSnap => {
-          const saved = planSnap.val();
-          if (saved && saved.html && saved.data) {
-            resultEl.innerHTML = saved.html;
-            currentPlan = saved.data;
-            actionButtons.classList.remove("hidden");
-            
-            const expiryDate = new Date(metadata.generationDate);
-            expiryDate.setDate(expiryDate.getDate() + parseInt(metadata.days));
-            const today = new Date();
-            const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
-            
-            daysLeftDisplay.textContent = `Days Left: ${daysRemaining}`;
-          }
-        });
-      });
-    }
-
     // Save current meal plan to Firebase
     function saveCurrentMealPlan(planHTML, days, planData) {
-      if (!currentUserGroup) return;
+      const currentMealPlanRef = db.ref(`groups/${currentGroupName}/mealPlan/current`);
+      const mealPlanMetadataRef = db.ref(`groups/${currentGroupName}/mealPlan/metadata`);
       
       const generationDate = new Date().toISOString().split('T')[0];
-      db.ref(`groups/${currentUserGroup}/mealPlan/current`).set({
+      currentMealPlanRef.set({
         html: planHTML,
         data: planData
       });
-      db.ref(`groups/${currentUserGroup}/mealPlan/metadata`).set({ generationDate, days });
-    }
-
-    // Render dishes list
-    function renderDishes(reset = false) {
-      const search = document.getElementById("searchInput").value.toLowerCase();
-      const dishes = (foodGroups[currentGroup] || []).filter(d => d.toLowerCase().includes(search));
-      
-      dishContainer.innerHTML = dishes.map(dish => `
-        <div class="dish-card bg-gray-700 p-4 rounded-lg shadow-md relative fade-in">
-          <div class="flex justify-between items-start">
-            <div class="font-medium text-green-300 break-words pr-2">${dish}</div>
-            <div class="flex gap-1">
-              <button onclick="editDish('${dish.replace(/'/g, '\\')}')" class="text-yellow-400 hover:text-yellow-300 text-sm p-1">
-                ✏️
-              </button>
-              <button onclick="openDeleteModal('${dish.replace(/'/g, '\\')}')" class="text-red-400 hover:text-red-300 text-sm p-1">
-                🗑️
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Update dish statistics
-    function updateDishStats() {
-      const healthyCount = foodGroups["Healthy Home-style Meals"]?.length || 0;
-      const junkCount = foodGroups["Junk Food"]?.length || 0;
-      const dessertCount = foodGroups["Dessert"]?.length || 0;
-      
-      document.getElementById("healthyCount").textContent = healthyCount;
-      document.getElementById("junkCount").textContent = junkCount;
-      document.getElementById("dessertCount").textContent = dessertCount;
-      document.getElementById("totalCount").textContent = healthyCount + junkCount + dessertCount;
-    }
-
-    // Add new dish
-    function addDish() {
-      const name = document.getElementById("newDishName").value.trim();
-      const group = document.getElementById("newDishGroup").value;
-      
-      if (!name) {
-        showToast("Please enter a dish name", "red");
-        return;
-      }
-      
-      const list = foodGroups[group] || [];
-      if (list.includes(name)) {
-        showToast("Dish already exists", "red");
-        return;
-      }
-      
-      list.push(name);
-      db.ref(`groups/${currentUserGroup}/foodGroups/${group}`).set(list)
-        .then(() => {
-          document.getElementById("newDishName").value = "";
-          showToast("Dish added successfully!");
-          if (group === currentGroup) renderDishes(true);
-          updateDishStats();
-        })
-        .catch(error => {
-          showToast("Error adding dish: " + error.message, "red");
-        });
-    }
-
-    // Edit dish functions
-    function editDish(dish) {
-      selectedDish = dish;
-      document.getElementById("editDishName").value = dish;
-      document.getElementById("editModal").classList.remove("hidden");
-    }
-
-    function closeEditModal() {
-      document.getElementById("editModal").classList.add("hidden");
-    }
-
-    function saveEditedDish() {
-      const newDish = document.getElementById("editDishName").value.trim();
-      
-      if (!newDish) {
-        showToast("Dish name cannot be empty", "red");
-        return;
-      }
-      
-      if (newDish === selectedDish) {
-        closeEditModal();
-        return;
-      }
-      
-      // Check if new name already exists
-      if (foodGroups[currentGroup].includes(newDish)) {
-        showToast("Dish with this name already exists", "red");
-        return;
-      }
-      
-      const list = foodGroups[currentGroup].map(d => d === selectedDish ? newDish : d);
-      db.ref(`groups/${currentUserGroup}/foodGroups/${currentGroup}`).set(list)
-        .then(() => {
-          closeEditModal();
-          renderDishes(true);
-          showToast("Dish updated successfully!");
-        })
-        .catch(error => {
-          showToast("Error updating dish: " + error.message, "red");
-        });
-    }
-
-    // Delete dish functions
-    function openDeleteModal(dish) {
-      selectedDish = dish;
-      document.getElementById("deleteModal").classList.remove("hidden");
-    }
-
-    function closeDeleteModal() {
-      document.getElementById("deleteModal").classList.add("hidden");
-    }
-
-    function deleteDish() {
-      const list = foodGroups[currentGroup].filter(d => d !== selectedDish);
-      db.ref(`groups/${currentUserGroup}/foodGroups/${currentGroup}`).set(list)
-        .then(() => {
-          closeDeleteModal();
-          renderDishes(true);
-          updateDishStats();
-          showToast("Dish deleted successfully!");
-        })
-        .catch(error => {
-          showToast("Error deleting dish: " + error.message, "red");
-        });
-    }
-
-    // Grocery list functions
-    function showGroceryModal() {
-      document.getElementById("groceryListContent").innerHTML = generateGroceryListHTML();
-      document.getElementById("groceryModal").classList.remove("hidden");
-    }
-
-    function closeGroceryModal() {
-      document.getElementById("groceryModal").classList.add("hidden");
-    }
-
-    function generateGroceryListHTML() {
-      const groceryList = generateGroceryList();
-      let html = '';
-      
-      for (const [category, items] of Object.entries(groceryList)) {
-        if (items.length > 0) {
-          html += `
-            <div class="mb-6">
-              <h4 class="text-lg font-semibold text-green-400 mb-2 border-b border-gray-700 pb-1">${category}</h4>
-              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                ${items.map(item => `
-                  <li class="flex items-center bg-gray-700 rounded px-3 py-2">
-                    <input type="checkbox" class="mr-2 h-4 w-4">
-                    <span>${item}</span>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
-          `;
-        }
-      }
-      
-      return html || '<p class="text-gray-400">No ingredients found for the current meal plan.</p>';
-    }
-
-    function generateGroceryList() {
-      const ingredients = new Set();
-      
-      currentPlan.forEach(day => {
-        const mealIngredients = ingredientMap[day.item] || [];
-        mealIngredients.forEach(ing => ingredients.add(ing));
-        
-        if (day.dessert) {
-          const dessertIngredients = ingredientMap[day.dessert] || [];
-          dessertIngredients.forEach(ing => ingredients.add(ing));
-        }
-      });
-
-      // Categorize ingredients
-      const categorized = {
-        "Produce": [],
-        "Meat/Fish": [],
-        "Dairy": [],
-        "Dry Goods": [],
-        "Bakery": [],
-        "Frozen": [],
-        "Canned Goods": [],
-        "Spices/Condiments": [],
-        "Other": []
-      };
-
-      ingredients.forEach(ing => {
-        if (/(apple|banana|broccoli|carrot|lettuce|tomato|onion|garlic|pepper|spinach|potato)/i.test(ing)) {
-          categorized["Produce"].push(ing);
-        } 
-        else if (/(chicken|beef|fish|pork|salmon|shrimp|bacon)/i.test(ing)) {
-          categorized["Meat/Fish"].push(ing);
-        }
-        else if (/(milk|cheese|yogurt|butter|cream|egg)/i.test(ing)) {
-          categorized["Dairy"].push(ing);
-        }
-        else if (/(flour|sugar|rice|pasta|quinoa|cereal|oat)/i.test(ing)) {
-          categorized["Dry Goods"].push(ing);
-        }
-        else if (/(bread|bun|crust|muffin)/i.test(ing)) {
-          categorized["Bakery"].push(ing);
-        }
-        else if (/(ice cream|frozen)/i.test(ing)) {
-          categorized["Frozen"].push(ing);
-        }
-        else if (/(sauce|ketchup|mustard|mayo|soy|vinegar|oil|spice)/i.test(ing)) {
-          categorized["Spices/Condiments"].push(ing);
-        }
-        else {
-          categorized["Other"].push(ing);
-        }
-      });
-
-      // Sort each category alphabetically
-      for (const category in categorized) {
-        categorized[category].sort();
-      }
-
-      return categorized;
-    }
-
-    function printGroceryList() {
-      const printWindow = window.open('', '', 'width=600,height=600');
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Grocery List</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 20px; }
-              h1 { color: #2e7d32; text-align: center; }
-              h2 { color: #388e3c; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-              ul { list-style-type: none; padding: 0; }
-              li { padding: 5px 0; }
-              @media print {
-                body { padding: 0; }
-                button { display: none; }
-              }
-            </style>
-          </head>
-          <body>
-            <h1>Grocery List</h1>
-            ${document.getElementById("groceryListContent").innerHTML}
-            <button onclick="window.print()" style="margin-top: 20px; padding: 10px; background: #2e7d32; color: white; border: none; border-radius: 4px; cursor: pointer;">
-              Print List
-            </button>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
-
-    function exportGroceryPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      doc.setFontSize(20);
-      doc.setTextColor(40, 167, 69);
-      doc.text("Grocery List", 105, 15, { align: 'center' });
-      
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
-      
-      const groceryList = generateGroceryList();
-      let yPosition = 40;
-      
-      for (const [category, items] of Object.entries(groceryList)) {
-        if (items.length > 0) {
-          // Add category heading
-          doc.setFontSize(14);
-          doc.setTextColor(40, 167, 69);
-          doc.text(category + ":", 15, yPosition);
-          yPosition += 8;
-          
-          // Add items
-          doc.setFontSize(12);
-          doc.setTextColor(0, 0, 0);
-          
-          items.forEach(item => {
-            if (yPosition > 280) {
-              doc.addPage();
-              yPosition = 20;
-            }
-            doc.text(`• ${item}`, 20, yPosition);
-            yPosition += 7;
-          });
-          
-          yPosition += 5; // Add extra space between categories
-        }
-      }
-      
-      doc.save('grocery-list.pdf');
-      showToast("Grocery list exported as PDF");
+      mealPlanMetadataRef.set({ generationDate, days });
     }
 
     // PDF Export for meal plan
@@ -1217,17 +694,14 @@
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       
-      // Add title
       doc.setFontSize(20);
       doc.setTextColor(40, 167, 69);
       doc.text("Meal Plan", 105, 15, { align: 'center' });
       
-      // Add dates
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       doc.text(`Generated: ${new Date().toLocaleDateString()} | Duration: ${document.getElementById("daysInput").value || 7} days`, 105, 25, { align: 'center' });
       
-      // Add meal plan content
       const planText = [];
       currentPlan.forEach(day => {
         planText.push(`Day ${day.day}: ${day.item} (${day.group})`);
@@ -1236,42 +710,6 @@
       
       doc.setFontSize(12);
       doc.text(planText, 15, 40);
-      
-      // Add grocery list on second page
-      doc.addPage();
-      doc.setFontSize(20);
-      doc.setTextColor(40, 167, 69);
-      doc.text("Grocery List", 105, 15, { align: 'center' });
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      
-      const groceryList = generateGroceryList();
-      let yPosition = 30;
-      
-      for (const [category, items] of Object.entries(groceryList)) {
-        if (items.length > 0) {
-          // Add category heading
-          doc.setFontSize(14);
-          doc.setTextColor(40, 167, 69);
-          doc.text(category + ":", 15, yPosition);
-          yPosition += 8;
-          
-          // Add items
-          doc.setFontSize(12);
-          doc.setTextColor(0, 0, 0);
-          
-          items.forEach(item => {
-            if (yPosition > 280) {
-              doc.addPage();
-              yPosition = 20;
-            }
-            doc.text(`• ${item}`, 20, yPosition);
-            yPosition += 7;
-          });
-          
-          yPosition += 5; // Add extra space between categories
-        }
-      }
       
       doc.save('meal-plan.pdf');
       showToast("Meal plan exported as PDF");
@@ -1303,22 +741,12 @@
     }
 
     function generateShareText() {
-      let text = `🍽️ Group Meal Plan (${currentUserGroup}):\n\n`;
+      let text = "🍽️ My Meal Plan:\n\n";
       currentPlan.forEach(day => {
         text += `Day ${day.day}: ${day.item}`;
         if (day.dessert) text += ` + ${day.dessert}`;
         text += "\n";
       });
-      
-      text += "\n🛒 Grocery List:\n";
-      const groceryList = generateGroceryList();
-      for (const [category, items] of Object.entries(groceryList)) {
-        if (items.length > 0) {
-          text += `\n${category}:\n`;
-          text += items.map(item => `- ${item}`).join('\n');
-        }
-      }
-      
       return text;
     }
 
